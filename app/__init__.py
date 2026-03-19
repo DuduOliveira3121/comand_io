@@ -1,8 +1,11 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask
 from .extensions import db
 from .mesa.routes import mesa_bp
 from app.pedido.routes import pedido_bp
 from app.produto.routes import produto_bp
+from app.frontend.routes import frontend_bp
 from flask_cors import CORS
 
 def create_app():
@@ -11,7 +14,8 @@ def create_app():
 
     CORS(app)
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@127.0.0.1:3306/restaurante"    
+    load_dotenv()
+    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@127.0.0.1:3306/restaurante"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
@@ -22,6 +26,7 @@ def create_app():
     app.register_blueprint(mesa_bp)
     app.register_blueprint(pedido_bp)
     app.register_blueprint(produto_bp)
+    app.register_blueprint(frontend_bp)
 
     print(app.url_map)
 

@@ -50,6 +50,20 @@ coverage.xml
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Temporary test scripts
+seed_data.py
+temp_db_check.py
+*.tmp
+
+# QR Code outputs (generated)
+qrcode_*.png
+
+# Local environment
+.env
+.env.local
+.DS_Store
+Thumbs.db
 desktop.ini
 
 # Logs and local files

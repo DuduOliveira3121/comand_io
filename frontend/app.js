@@ -1,4 +1,4 @@
-const API = "http://192.168.15.2:5000"
+const API = "http://127.0.0.1:5000"
 
 function carregarProdutos(){
 
@@ -42,7 +42,7 @@ div.innerHTML = html
 
 function criarProduto(){
 
-fetch("http://127.0.0.1:5000/produtos/", {
+fetch(`${API}/produtos/`, {
 
 method: "POST",
 
