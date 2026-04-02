@@ -1,19 +1,22 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
+from app.email_service import enviar_email
 from app.extensions import db
 from app.models.pedido import Pedido
 from app.models.mesa import Mesa
 
 mesa_bp = Blueprint("mesa", __name__, url_prefix="/mesas")
 
-@mesa_bp.route("/abrir/<int:numero>")
-def abrir_mesa_qrcode(numero):
+@mesa_bp.route("/abrir/<int:mesa_id>", methods=["POST"])
+def abrir_mesa_qrcode(mesa_id):
 
-    mesa = Mesa.query.filter_by(numero=numero).first()
+    data = request.get_json()
+    email = data.get("email")
+
+    mesa = Mesa.query.filter_by(numero=mesa_id).first()
 
     if not mesa:
         return jsonify({"erro": "Mesa não encontrada"}), 404
 
-    # 🔎 verificar se já existe pedido aberto
     pedido_existente = Pedido.query.filter_by(
         mesa_id=mesa.id,
         status="aberto"
@@ -25,14 +28,20 @@ def abrir_mesa_qrcode(numero):
             "pedido_id": pedido_existente.id
         })
 
-    # criar novo pedido
     novo_pedido = Pedido(
         mesa_id=mesa.id,
-        status="aberto"
+        status="aberto",
+        email=email
     )
 
     db.session.add(novo_pedido)
     db.session.commit()
+
+    # 👇 enviar email aqui
+    try:
+        enviar_email(email)
+    except Exception as e:
+        print("Erro ao enviar email:", e)
 
     return jsonify({
         "mensagem": "Mesa aberta com sucesso",
@@ -63,7 +72,8 @@ def status_mesas():
         resultado.append({
             "numero": mesa.numero,
             "status": status,
-            "total": total
+            "total": total,
+            "email": pedido.email if pedido else None
         })
 
     return jsonify(resultado)

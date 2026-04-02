@@ -8,47 +8,18 @@ class Pedido(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    mesa_id = db.Column(
-        db.Integer,
-        db.ForeignKey("mesas.id"),
-        nullable=False
-    )
+    mesa_id = db.Column(db.Integer, db.ForeignKey("mesas.id"), nullable=False)
 
-    mesa = db.relationship("Mesa")
+    email = db.Column(db.String(120))
 
-    status = db.Column(
-        db.String(20),
-        default="aberto"
-    )
+    status = db.Column(db.String(20), default="aberto")
 
-    data_criacao = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
 
-    itens = db.relationship("ItemPedido", backref="pedido", lazy=True)
-
-    status = db.Column(
-        db.String(20),
-        default="aberto"
-    )
-
-    data_criacao = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
-
-    # relação com itens
     itens = db.relationship("ItemPedido", backref="pedido", lazy=True)
 
     def calcular_total(self):
-
-        total = 0
-
-        for item in self.itens:
-            total += item.quantidade * item.preco_unitario
-
-        return total
+        return sum(item.quantidade * item.preco_unitario for item in self.itens)
 
 
     def quantidade_itens(self):
@@ -59,3 +30,5 @@ class Pedido(db.Model):
             total += item.quantidade
 
         return total
+    
+    

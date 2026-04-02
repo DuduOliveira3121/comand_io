@@ -7,6 +7,10 @@ from app.models.mesa import Mesa
 
 pedido_bp = Blueprint("pedido", __name__, url_prefix="/pedidos")
 
+
+# =========================
+# ADICIONAR ITEM
+# =========================
 @pedido_bp.route("/<int:pedido_id>/itens", methods=["POST"])
 def adicionar_item(pedido_id):
 
@@ -34,20 +38,60 @@ def adicionar_item(pedido_id):
         "mensagem": "Item adicionado ao pedido"
     }), 201
 
-@pedido_bp.route("/mesa/<int:mesa_id>")
-def pedido_da_mesa(mesa_id):
 
+# =========================
+# BUSCAR PEDIDO
+# =========================
+@pedido_bp.route("/<int:id>")
+def buscar_pedido(id):
+
+    pedido = Pedido.query.get(id)
+
+    if not pedido:
+        return jsonify({"erro": "Pedido não encontrado"}), 404
+
+    return jsonify({
+        "id": pedido.id,
+        "total": pedido.calcular_total(),
+        "itens": [
+            {
+                "produto": i.produto.nome,
+                "quantidade": i.quantidade
+            }
+            for i in pedido.itens
+        ]
+    })
+
+
+# =========================
+# PEDIDO DA MESA (🔥 CORRIGIDO)
+# =========================
+@pedido_bp.route("/mesa/<int:mesa_numero>")
+def pedido_da_mesa(mesa_numero):
+
+    # 🔥 BUSCA A MESA PELO NÚMERO
+    mesa = Mesa.query.filter_by(numero=mesa_numero).first()
+
+    if not mesa:
+        return jsonify({
+            "pedido_id": None,
+            "itens": [],
+            "total": 0
+        })
+
+    # 🔥 BUSCA O PEDIDO PELO ID REAL
     pedido = Pedido.query.filter_by(
-        mesa_id=mesa_id,
+        mesa_id=mesa.id,
         status="aberto"
     ).first()
 
     if not pedido:
         return jsonify({
             "pedido_id": None,
-            "itens": []
+            "itens": [],
+            "total": 0
         })
-    
+
     itens = []
 
     for item in pedido.itens:
@@ -63,34 +107,10 @@ def pedido_da_mesa(mesa_id):
         "total": pedido.calcular_total()
     })
 
-@pedido_bp.route("/mesa/<int:mesa_id>", methods=["GET"])
-def consultar_pedido_mesa(mesa_id):
 
-    pedido = Pedido.query.filter_by(mesa_id=mesa_id, status="aberto").first()
-
-    if not pedido:
-        return jsonify({"mensagem": "Nenhum pedido aberto para essa mesa"}), 404
-
-    itens = ItemPedido.query.filter_by(pedido_id=pedido.id).all()
-
-    lista_itens = []
-
-    for item in itens:
-        produto = Produto.query.get(item.produto_id)
-
-        lista_itens.append({
-            "produto": produto.nome,
-            "quantidade": item.quantidade,
-            "preco_unitario": item.preco_unitario
-        })
-
-    return jsonify({
-        "mesa_id": mesa_id,
-        "pedido_id": pedido.id,
-        "itens": lista_itens
-        
-    })
-
+# =========================
+# FECHAR PEDIDO
+# =========================
 @pedido_bp.route("/fechar/<int:pedido_id>", methods=["POST"])
 def fechar_pedido(pedido_id):
 
@@ -102,27 +122,34 @@ def fechar_pedido(pedido_id):
     pedido.status = "fechado"
 
     mesa = Mesa.query.get(pedido.mesa_id)
-    mesa.status = "livre"
+    if mesa:
+        mesa.status = "livre"
 
     db.session.commit()
 
     return jsonify({
         "mensagem": "Pedido encerrado",
-        "mesa": mesa.numero
+        "mesa": mesa.numero if mesa else None
     })
 
+
+# =========================
+# TOTAL
+# =========================
 @pedido_bp.route("/total/<int:pedido_id>")
 def total_pedido(pedido_id):
 
     pedido = Pedido.query.get_or_404(pedido_id)
 
-    total = pedido.calcular_total()
-
     return jsonify({
         "pedido_id": pedido.id,
-        "total": total
+        "total": pedido.calcular_total()
     })
 
+
+# =========================
+# RESUMO
+# =========================
 @pedido_bp.route("/resumo/<int:pedido_id>")
 def resumo_pedido(pedido_id):
 
@@ -131,7 +158,6 @@ def resumo_pedido(pedido_id):
     itens = []
 
     for item in pedido.itens:
-
         itens.append({
             "produto": item.produto.nome,
             "quantidade": item.quantidade,
@@ -145,6 +171,10 @@ def resumo_pedido(pedido_id):
         "total": pedido.calcular_total()
     })
 
+
+# =========================
+# COZINHA
+# =========================
 @pedido_bp.route("/cozinha")
 def pedidos_cozinha():
 
@@ -162,9 +192,11 @@ def pedidos_cozinha():
                 "quantidade": item.quantidade
             })
 
+        mesa = Mesa.query.get(pedido.mesa_id)
+
         resultado.append({
             "pedido_id": pedido.id,
-            "mesa": pedido.mesa.numero,
+            "mesa": mesa.numero if mesa else "?",
             "itens": itens
         })
 

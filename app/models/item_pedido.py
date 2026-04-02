@@ -7,11 +7,7 @@ class ItemPedido(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    pedido_id = db.Column(
-        db.Integer,
-        db.ForeignKey("pedidos.id"),
-        nullable=False
-    )
+    pedido_id = db.Column(db.Integer, db.ForeignKey("pedidos.id"))
 
     produto_id = db.Column(
         db.Integer,
