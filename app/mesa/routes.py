@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from threading import Thread  # 👈 1. Nova importação adicionada aqui
 from app.email_service import enviar_email
 from app.extensions import db
 from app.models.pedido import Pedido
@@ -37,11 +38,12 @@ def abrir_mesa_qrcode(mesa_id):
     db.session.add(novo_pedido)
     db.session.commit()
 
-    # 👇 enviar email aqui
-    try:
-        enviar_email(email)
-    except Exception as e:
-        print("Erro ao enviar email:", e)
+    # 👇 2. Nova lógica: Disparando o e-mail em segundo plano
+    if email:
+        # Nota: Se você mudou a função para aceitar a mesa (enviar_email_abertura), 
+        # mude o target e adicione a mesa no args: args=(email, mesa.numero)
+        thread_email = Thread(target=enviar_email, args=(email,))
+        thread_email.start()
 
     return jsonify({
         "mensagem": "Mesa aberta com sucesso",
