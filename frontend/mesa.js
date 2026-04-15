@@ -1,9 +1,19 @@
 
 
-const API = "http://127.0.0.1:5000"
+const API = window.location.origin
 
 const params = new URLSearchParams(window.location.search)
-const mesa = Number(params.get("mesa"))
+let mesa = Number(params.get("mesa"))
+if (!Number.isFinite(mesa) || mesa < 1) {
+    const pathMatch = window.location.pathname.match(/\/mesa\/(\d+)/)
+    if (pathMatch) {
+        mesa = Number(pathMatch[1])
+    }
+}
+if (!Number.isFinite(mesa) || mesa < 1) {
+    document.getElementById("titulo").innerText = "Mesa inválida"
+    throw new Error("Abra a mesa pelo link /mesa/N ou ?mesa=N")
+}
 
 document.getElementById("titulo").innerText = "Mesa " + mesa
 

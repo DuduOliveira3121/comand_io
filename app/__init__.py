@@ -15,7 +15,10 @@ def create_app():
     CORS(app)
 
     load_dotenv()
-    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@127.0.0.1:3306/restaurante"
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+        "SQLALCHEMY_DATABASE_URI",
+        "mysql+pymysql://root:@127.0.0.1:3306/restaurante",
+    )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)

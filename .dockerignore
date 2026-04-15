@@ -1,0 +1,45 @@
+# Git e ambiente local
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+.Python
+.venv
+venv
+ENV
+env
+pip-wheel-metadata
+*.egg-info
+.eggs
+dist
+build
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+
+# IDEs
+.idea
+.vscode
+*.sublime-*
+
+# Node (se existir na raiz)
+node_modules
+npm-debug.log*
+yarn-error.log*
+
+# Artefactos locais / dados
+*.log
+*.sqlite3
+*.db
+instance
+qrcode_*.png
+
+# Dumps SQL grandes não precisam na imagem da app (só no volume init do MySQL)
+docker/mysql/init/*.sql

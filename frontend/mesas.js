@@ -1,4 +1,4 @@
-const API = "http://192.168.15.2:5000"
+const API = window.location.origin
 
 let carregando = false
 
@@ -53,7 +53,7 @@ async function carregarMesas(){
 async function abrirMesa(numero){
 
         // REDIRECIONA DIRETO
-        window.location.href = `mesa.html?mesa=${numero}`
+        window.location.href = `/mesa/${numero}`
     }
 
 
