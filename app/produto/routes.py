@@ -6,6 +6,7 @@ produto_bp = Blueprint("produto", __name__, url_prefix="/produtos")
 
 
 @produto_bp.route("/", methods=["GET"])
+@produto_bp.route("", methods=["GET"])  # Suportar ambos /produtos e /produtos/
 def listar_produtos():
 
     produtos = Produto.query.all()

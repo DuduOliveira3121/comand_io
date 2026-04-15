@@ -1,6 +1,7 @@
-const API = "http://127.0.0.1:5000"
+// Use URL dinâmica para funcionar em qualquer host/porta
+const API = window.location.origin
 
-fetch(`${API}/produtos`)
+fetch(`${API}/produtos/`)
 .then(res => res.json())
 .then(produtos => {
 

@@ -26,12 +26,17 @@ async function carregarMesas(){
             }
 
             if(m.email){
-                email = `<br><small>${m.email}</small>`
+                // Truncar email no máximo 25 caracteres para não ficar feio
+                let emailTruncado = m.email.length > 25 
+                    ? m.email.substring(0, 22) + "..." 
+                    : m.email
+                email = `<br><small class="mesa-email">📧 ${emailTruncado}</small>`
             }
 
             div.innerHTML += `
                 <div class="mesa-card ${classe}"
-                onclick="abrirMesa(${m.numero})">
+                onclick="abrirMesa(${m.numero})"
+                title="${m.email || ''}">
 
                     Mesa ${m.numero}<br>
                     ${m.status}

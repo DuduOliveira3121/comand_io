@@ -25,7 +25,7 @@ let pedido_id = null
 
 async function carregarProdutos(){
 
-    const res = await fetch(`${API}/produtos`)
+    const res = await fetch(`${API}/produtos/`)
     const produtos = await res.json()
 
     const div = document.getElementById("produtos")
@@ -145,6 +145,7 @@ async function fecharPedido(){
 // =========================
 
 let emailCliente = null
+let mesaAbrindoPromise = null
 
 async function verificarMesa(){
 
@@ -154,15 +155,20 @@ async function verificarMesa(){
     if(dados.pedido_id){
 
         pedido_id = dados.pedido_id
+        document.getElementById("modal-email").style.display = "none"
 
     }else{
 
         if(!emailCliente){
-            emailCliente = prompt("Digite seu e-mail:")
+            // Mostrar modal em vez de prompt()
+            mostraModalEmail()
+            // Esperar pelo email
+            emailCliente = await pedirEmailDoModal()
         }
 
         if(!emailCliente){
-            alert("E-mail obrigatório")
+            alert("E-mail obrigatório para abrir a mesa")
+            location.href = "/mesas"
             return
         }
 
@@ -178,9 +184,75 @@ async function verificarMesa(){
 
         if(data.pedido_id){
             pedido_id = data.pedido_id
+            document.getElementById("modal-email").style.display = "none"
         }
     }
 }
+
+// =========================
+// MODAL DE EMAIL
+// =========================
+
+function mostraModalEmail(){
+    document.getElementById("modal-email").style.display = "flex"
+    document.getElementById("email-input").focus()
+}
+
+function ocultaModalEmail(){
+    document.getElementById("modal-email").style.display = "none"
+}
+
+function pedirEmailDoModal(){
+    return new Promise((resolve) => {
+        window.resolverEmail = (email) => {
+            resolve(email)
+        }
+    })
+}
+
+function validarEmail(email){
+    // Validação simples de email
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return regex.test(email)
+}
+
+function confirmarEmail(){
+    const email = document.getElementById("email-input").value.trim()
+    const erroDiv = document.getElementById("erro-email")
+    
+    if(!email){
+        erroDiv.textContent = "Por favor, digite seu email"
+        erroDiv.style.display = "block"
+        return
+    }
+    
+    if(!validarEmail(email)){
+        erroDiv.textContent = "Email inválido. Use o formato: seu@email.com"
+        erroDiv.style.display = "block"
+        return
+    }
+    
+    erroDiv.style.display = "none"
+    ocultaModalEmail()
+    window.resolverEmail(email)
+}
+
+function cancelarEmail(){
+    ocultaModalEmail()
+    window.resolverEmail(null)
+}
+
+// Permitir Enter no input de email
+document.addEventListener("DOMContentLoaded", function(){
+    const emailInput = document.getElementById("email-input")
+    if(emailInput){
+        emailInput.addEventListener("keypress", function(e){
+            if(e.key === "Enter"){
+                confirmarEmail()
+            }
+        })
+    }
+})
 
 // =========================
 // INIT

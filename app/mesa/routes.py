@@ -42,7 +42,7 @@ def abrir_mesa_qrcode(mesa_id):
     if email:
         # Nota: Se você mudou a função para aceitar a mesa (enviar_email_abertura), 
         # mude o target e adicione a mesa no args: args=(email, mesa.numero)
-        thread_email = Thread(target=enviar_email, args=(email,))
+        thread_email = Thread(target=enviar_email, args=(email, mesa.numero))
         thread_email.start()
 
     return jsonify({

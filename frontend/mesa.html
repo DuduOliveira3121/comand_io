@@ -50,6 +50,32 @@
 
 </div>
 
+<!-- Modal para solicitar email -->
+<div id="modal-email" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Abrir Mesa</h2>
+        <p>Para começar a fazer pedidos, informe seu email:</p>
+        
+        <input 
+            type="email" 
+            id="email-input" 
+            placeholder="seu@email.com"
+            class="email-input"
+        >
+        
+        <div class="modal-buttons">
+            <button class="btn-confirmar" onclick="confirmarEmail()">
+                Confirmar
+            </button>
+            <button class="btn-cancelar" onclick="cancelarEmail()">
+                Cancelar
+            </button>
+        </div>
+        
+        <div id="erro-email" class="erro-mensagem"></div>
+    </div>
+</div>
+
 <script src="/mesa.js"></script>
 
 </body>
