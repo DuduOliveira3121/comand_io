@@ -379,10 +379,9 @@ Configure as seguintes variáveis conforme necessário:
 Após iniciar o serviço:
 
 1. Acesse http://localhost:5000
-2. Consulte a documentação da API (se disponível)
-3. Configure suas mesas e produtos no admin
-4. Teste a geração de QR codes
-5. Acesse o painel da cozinha
+2. Configure suas mesas e produtos no admin
+3. Teste a geração de QR codes
+4. Acesse o painel da cozinha
 
 ---
 
