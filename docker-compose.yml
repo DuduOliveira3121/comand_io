@@ -26,6 +26,7 @@ services:
       - "5000:5000"
     environment:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD:-comand_io_dev}@db:3306/restaurante
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
