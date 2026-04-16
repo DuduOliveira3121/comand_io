@@ -83,9 +83,10 @@ def pedido_da_mesa(mesa_numero):
         })
 
     # 🔥 BUSCA O PEDIDO PELO ID REAL
-    pedido = Pedido.query.filter_by(
-        mesa_id=mesa.id,
-        status="aberto"
+    # Aceita qualquer status que ainda esteja sendo preparado
+    pedido = Pedido.query.filter(
+        Pedido.mesa_id == mesa.id,
+        Pedido.status.in_(["aberto", "em_preparo", "pronto"])
     ).first()
 
     if not pedido:
@@ -181,7 +182,10 @@ def resumo_pedido(pedido_id):
 @pedido_bp.route("/cozinha")
 def pedidos_cozinha():
 
-    pedidos = Pedido.query.filter_by(status="aberto").all()
+    # Mostra todos os pedidos que ainda estão sendo preparados (não entregues)
+    pedidos = Pedido.query.filter(
+        Pedido.status.in_(["aberto", "em_preparo", "pronto"])
+    ).all()
 
     resultado = []
 

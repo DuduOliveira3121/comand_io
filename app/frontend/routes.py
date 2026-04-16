@@ -1,4 +1,4 @@
-from flask import Blueprint, send_from_directory
+from flask import Blueprint, send_from_directory, redirect, url_for
 import os
 
 frontend_bp = Blueprint("frontend", __name__)
@@ -16,7 +16,8 @@ def mesas():
 
 @frontend_bp.route("/mesa/<int:numero>")
 def mesa(numero):
-    return send_from_directory(FRONTEND_DIR, "mesa.html")
+    # Redirecionar para /mesa.html?mesa=N
+    return redirect(f"/mesa.html?mesa={numero}", code=302)
 
 @frontend_bp.route("/cardapio")
 def cardapio():

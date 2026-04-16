@@ -1,20 +1,22 @@
 
 
+console.log("✅ mesa.js carregado!");
+
 const API = window.location.origin
 
+// Extrair número da mesa da query string
 const params = new URLSearchParams(window.location.search)
 let mesa = Number(params.get("mesa"))
+
 if (!Number.isFinite(mesa) || mesa < 1) {
-    const pathMatch = window.location.pathname.match(/\/mesa\/(\d+)/)
-    if (pathMatch) {
-        mesa = Number(pathMatch[1])
-    }
-}
-if (!Number.isFinite(mesa) || mesa < 1) {
-    document.getElementById("titulo").innerText = "Mesa inválida"
-    throw new Error("Abra a mesa pelo link /mesa/N ou ?mesa=N")
+    console.error("❌ ERRO: Mesa inválida ou não fornecida")
+    console.error("URL:", window.location.href)
+    document.getElementById("titulo").innerText = "❌ Mesa não encontrada"
+    throw new Error("Acesse via /mesa/1, /mesa/2, etc ou ?mesa=1")
 }
 
+console.log("✅ Mesa:", mesa)
+document.getElementById("titulo").innerText = "Mesa " + mesa
 document.getElementById("titulo").innerText = "Mesa " + mesa
 
 let pedido_id = null
@@ -25,58 +27,79 @@ let pedido_id = null
 
 async function carregarProdutos(){
 
-    const res = await fetch(`${API}/produtos/`)
-    const produtos = await res.json()
+    try {
+        const res = await fetch(`${API}/produtos/`)
+        const produtos = await res.json()
 
-    const div = document.getElementById("produtos")
+        console.log("✅ Produtos carregados:", produtos.length, "itens")
 
-    let html = ""
+        const div = document.getElementById("produtos")
 
-    produtos.forEach(p => {
+        let html = ""
 
-        html += `
-        <div class="produto">
+        produtos.forEach(p => {
 
-            <div class="produto-info">
-                <h3>${p.nome}</h3>
-                <p>${p.descricao}</p>
-                <b>R$ ${Number(p.preco).toFixed(2)}</b>
+            html += `
+            <div class="produto">
+
+                <div class="produto-info">
+                    <h3>${p.nome}</h3>
+                    <p>${p.descricao}</p>
+                    <b>R$ ${Number(p.preco).toFixed(2)}</b>
+                </div>
+
+                <button class="botao-add" onclick="pedir(${p.id})">
+                    Adicionar
+                </button>
+
             </div>
+            `
+        })
 
-            <button class="botao-add" onclick="pedir(${p.id})">
-                Adicionar
-            </button>
-
-        </div>
-        `
-    })
-
-    div.innerHTML = html
+        div.innerHTML = html
+    } catch (erro) {
+        console.error("❌ Erro ao carregar produtos:", erro)
+        document.getElementById("produtos").innerHTML = "<p>Erro ao carregar produtos</p>"
+    }
 }
 
 // =========================
 // PEDIR ITEM
 // =========================
 
-function pedir(produto_id){
+async function pedir(produto_id){
 
-    if(!pedido_id){
-        alert("Mesa ainda não foi aberta")
-        return
-    }
+    try {
+        // Se não há pedido, abre/cria novo antes de adicionar
+        if(!pedido_id){
+            console.log("⏳ Sem pedido, abrindo mesa para novo pedido...")
+            await verificarMesa()
+        }
 
-    fetch(`${API}/pedidos/${pedido_id}/itens`,{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body: JSON.stringify({
-            produto_id:produto_id,
-            quantidade:1
+        // Se AINDA não há pedido, aborta
+        if(!pedido_id){
+            alert("Falha ao abrir pedido. Tente novamente.")
+            return
+        }
+
+        const res = await fetch(`${API}/pedidos/${pedido_id}/itens`,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                produto_id:produto_id,
+                quantidade:1
+            })
         })
-    })
-    .then(res=>res.json())
-    .then(()=> carregarPedido())
+        
+        const data = await res.json()
+        console.log("✅ Item adicionado ao pedido:", data)
+        await carregarPedido()
+    } catch (erro) {
+        console.error("❌ Erro ao pedir item:", erro)
+        alert("Erro ao adicionar item")
+    }
 }
 
 // =========================
@@ -85,39 +108,43 @@ function pedir(produto_id){
 
 async function carregarPedido(){
 
-    const res = await fetch(`${API}/pedidos/mesa/${mesa}`)
-    const pedido = await res.json()
+    try {
+        const res = await fetch(`${API}/pedidos/mesa/${mesa}`)
+        const pedido = await res.json()
 
-    console.log("PEDIDO:", pedido) // DEBUG
+        console.log("✅ Resposta da API para mesa", mesa, ":", pedido)
 
-    if(!pedido.pedido_id){
-        document.getElementById("pedido").innerHTML = "<b>Mesa não aberta</b>"
-        document.getElementById("total").innerText = "Total: R$ 0.00"
-        return
+        if(!pedido.pedido_id){
+            document.getElementById("pedido").innerHTML = "<b>Mesa não aberta</b>"
+            document.getElementById("total").innerText = "Total: R$ 0.00"
+            return
+        }
+
+        pedido_id = pedido.pedido_id
+
+        let html = ""
+        let total = 0
+
+        pedido.itens.forEach(item => {
+
+            const subtotal = item.quantidade * item.preco_unitario
+            total += subtotal
+
+            html += `
+            <p>
+                ${item.produto} x${item.quantidade} — R$ ${subtotal.toFixed(2)}
+            </p>
+            `
+        })
+
+        document.getElementById("pedido").innerHTML = html
+
+        // 🔥 FORÇA o total correto (mesmo se backend falhar)
+        document.getElementById("total").innerText =
+            "Total: R$ " + total.toFixed(2)
+    } catch (erro) {
+        console.error("❌ Erro ao carregar pedido:", erro)
     }
-
-    pedido_id = pedido.pedido_id
-
-    let html = ""
-    let total = 0
-
-    pedido.itens.forEach(item => {
-
-        const subtotal = item.quantidade * item.preco_unitario
-        total += subtotal
-
-        html += `
-        <p>
-            ${item.produto} x${item.quantidade} — R$ ${subtotal.toFixed(2)}
-        </p>
-        `
-    })
-
-    document.getElementById("pedido").innerHTML = html
-
-    // 🔥 FORÇA o total correto (mesmo se backend falhar)
-    document.getElementById("total").innerText =
-        "Total: R$ " + total.toFixed(2)
 }
 
 // =========================
@@ -149,43 +176,61 @@ let mesaAbrindoPromise = null
 
 async function verificarMesa(){
 
-    const res = await fetch(`${API}/pedidos/mesa/${mesa}`)
-    const dados = await res.json()
+    try {
+        const url = `${API}/pedidos/mesa/${mesa}`
+        console.log("🔍 Verificando mesa no endpoint:", url)
+        
+        const res = await fetch(url)
+        const dados = await res.json()
 
-    if(dados.pedido_id){
+        console.log("✅ Resposta do servidor:", dados)
 
-        pedido_id = dados.pedido_id
-        document.getElementById("modal-email").style.display = "none"
-
-    }else{
-
-        if(!emailCliente){
-            // Mostrar modal em vez de prompt()
-            mostraModalEmail()
-            // Esperar pelo email
-            emailCliente = await pedirEmailDoModal()
-        }
-
-        if(!emailCliente){
-            alert("E-mail obrigatório para abrir a mesa")
-            location.href = "/mesas"
-            return
-        }
-
-        const resposta = await fetch(`${API}/mesas/abrir/${mesa}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email: emailCliente })
-        })
-
-        const data = await resposta.json()
-
-        if(data.pedido_id){
-            pedido_id = data.pedido_id
+        if(dados.pedido_id){
+            pedido_id = dados.pedido_id
+            console.log("✅ Pedido já existente, ID:", pedido_id)
             document.getElementById("modal-email").style.display = "none"
+
+        }else{
+            console.log("📧 Pedido não existe, pedindo email...")
+
+            if(!emailCliente){
+                // Mostrar modal em vez de prompt()
+                mostraModalEmail()
+                // Esperar pelo email
+                emailCliente = await pedirEmailDoModal()
+            }
+
+            if(!emailCliente){
+                alert("E-mail obrigatório para abrir a mesa")
+                location.href = "/mesas"
+                return
+            }
+
+            console.log("📤 Abrindo mesa com email:", emailCliente)
+
+            const resposta = await fetch(`${API}/mesas/abrir/${mesa}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email: emailCliente })
+            })
+
+            const data = await resposta.json()
+            console.log("✅ Resposta ao abrir mesa:", data)
+
+            if(data.pedido_id){
+                pedido_id = data.pedido_id
+                console.log("✅ Mesa aberta com sucesso, pedido_id:", pedido_id)
+                document.getElementById("modal-email").style.display = "none"
+            } else {
+                console.error("❌ Erro ao abrir mesa:", data)
+                alert("Erro ao abrir mesa: " + (data.erro || "Desconhecido"))
+            }
         }
+    } catch (erro) {
+        console.error("❌ Erro ao verificar mesa:", erro)
+        alert("Erro ao verificar mesa: " + erro.message)
     }
 }
 
@@ -260,12 +305,25 @@ document.addEventListener("DOMContentLoaded", function(){
 
 async function init(){
 
-    await verificarMesa()   // 🔥 espera abrir/pegar pedido
-    await carregarProdutos()
-    await carregarPedido()  // 🔥 garante atualização depois
+    console.log("🔄 Iniciando página da mesa...")
+    
+    try {
+        await verificarMesa()   // 🔥 espera abrir/pegar pedido
+        console.log("✅ Mesa verificada, pedido_id:", pedido_id)
+        
+        await carregarProdutos()
+        console.log("✅ Produtos carregados")
+        
+        await carregarPedido()  // 🔥 garante atualização depois
+        console.log("✅ Pedido carregado")
 
-    // 🔥 atualização automática (igual cozinha)
-    setInterval(carregarPedido, 2000)
+        // 🔥 atualização automática (igual cozinha)
+        setInterval(carregarPedido, 2000)
+        console.log("✅ Auto-refresh iniciado")
+    } catch (erro) {
+        console.error("❌ Erro ao inicializar:", erro)
+        alert("Erro ao carregar página: " + erro.message)
+    }
 }
 
 init()
