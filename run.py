@@ -35,6 +35,9 @@ def seed_initial_data():
                 {"nome": "Cerveja", "descricao": "Pilsen 600ml", "preco": 8.00},
                 {"nome": "Batata Frita", "descricao": "Porção grande", "preco": 18.00},
                 {"nome": "Agua", "descricao": "500ml", "preco": 2.00},
+                {"nome": "X-Burger", "descricao": "Pão com carne, acompanhado com queijo americano, tomates e alface", "preco": 10.00},
+                {"nome": "Anéis de Cebola", "descricao": "Anéis de cebola fritos, acompanhando 10 unidades", "preco": 13.00},
+                {"nome": "Salmão", "descricao": "Salmão Grelhado", "preco": 60.00},
             ]
             
             for produto_data in produtos_data:
@@ -56,8 +59,11 @@ def seed_initial_data():
 app = create_app()
 
 with app.app_context():
-    db.create_all()
-    seed_initial_data()
+    try:
+        db.create_all()
+        seed_initial_data()
+    except Exception as e:
+        print(f"⚠  Não foi possível inicializar o banco: {e}")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

@@ -1,12 +1,24 @@
+*, *::before, *::after{
+    box-sizing: border-box;
+}
+
+html{
+    overflow-x: hidden;
+}
+
 body{
     font-family: Arial, Helvetica, sans-serif;
     margin:0;
     background:#fafafa;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .container{
     width:90%;
+    max-width:100%;
     margin:auto;
+    overflow: hidden;
 }
 
 header{
@@ -24,20 +36,19 @@ header{
 }
 
 .pedido{
-    flex:1;
+    flex:0 0 280px;
     background:white;
     padding:20px;
     border-radius:10px;
     box-shadow:0 0 10px rgba(0,0,0,0.1);
-    margin:20px;
-    width:250px;
-    display:inline-block;
-    vertical-align:top;
+    align-self:flex-start;
+    position:sticky;
+    top:16px;
 }
 
 .produtos-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
     gap:15px;
 }
 
@@ -46,29 +57,48 @@ header{
     padding:15px;
     border-radius:10px;
     box-shadow:0 0 5px rgba(0,0,0,0.1);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+}
+
+.produto-info{
+    flex:1;
+    min-width:0;
 }
 
 .produto h3{
-    margin:0;
+    margin:0 0 4px;
+    font-size:15px;
 }
 
 .produto p{
-    font-size:14px;
+    font-size:13px;
     color:#666;
+    margin:0 0 4px;
 }
 
-.produto button{
-    margin-top:10px;
-    width:100%;
-    padding:8px;
+.produto b{
+    font-size:14px;
+    color:#333;
+}
+
+.produto button,
+.botao-add{
+    flex-shrink:0;
+    padding:8px 14px;
     border:none;
     background:#28a745;
     color:white;
-    border-radius:5px;
+    border-radius:6px;
     cursor:pointer;
+    font-size:14px;
+    white-space:nowrap;
 }
 
-.produto button:hover{
+.produto button:hover,
+.botao-add:hover{
     background:#218838;
 }
 
@@ -194,62 +224,44 @@ input{
 }
 
 .pedido-card{
+    border:2px solid #333;
+    padding:20px;
+    margin:0;
+    background:#fff3cd;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+    display:flex;
+    flex-direction:column;
+}
 
-border:2px solid #333;
-padding:20px;
-margin:20px;
-width:250px;
-display:inline-block;
-vertical-align:top;
-background:#fff3cd;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
-
+.cozinha-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:20px;
+    margin-top:20px;
 }
 
 .pedido-card h2{
-
-margin-top:0;
-
+    margin-top:0;
+    font-size:20px;
+    margin-bottom:10px;
 }
 
 .pedido-card ul{
-
-padding-left:20px;
-
+    padding-left:20px;
+    margin:0 0 0 0;
+    padding-bottom:12px;
+    border-bottom:2px solid #ccc;
 }
 
-.produto {
-
-    border:1px solid #ddd;
-    padding:15px;
-    margin:10px;
-    border-radius:10px;
-
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-
-    background:white;
-
+.pedido-itens-list{
+    padding-left:20px;
+    margin:0 0 0 0;
+    padding-bottom:12px;
+    border-bottom:2px solid #ccc;
 }
 
-.produto-info{
 
-    max-width:70%;
-
-}
-
-.botao-add{
-
-    background:#2ecc71;
-    border:none;
-    padding:10px 15px;
-    color:white;
-    border-radius:6px;
-    cursor:pointer;
-
-}
 
 .pedido h2{
 
@@ -266,10 +278,13 @@ padding-left:20px;
     left:0;
     right:0;
     bottom:0;
+    width:100%;
+    max-width:100vw;
     background:rgba(0,0,0,0.5);
     z-index:1000;
     justify-content:center;
     align-items:center;
+    overflow:hidden;
 }
 
 .modal-content{
@@ -367,9 +382,10 @@ padding-left:20px;
 
 .botoes-status{
     display:flex;
-    gap:10px;
+    flex-direction:column;
+    gap:8px;
     margin-top:15px;
-    flex-wrap:wrap;
+    flex-wrap:nowrap;
 }
 
 .btn-status{
@@ -419,4 +435,178 @@ padding-left:20px;
 
 .btn-status.entregue:hover{
     background:#138496;
+}
+
+/* ======================================
+   RESPONSIVIDADE — MEDIA QUERIES
+   ====================================== */
+
+/* ── Tablet largo (≤ 1024px) ────────────────────────── */
+@media (max-width: 1024px) {
+
+    /* Mesa: reduz coluna do pedido */
+    .pedido{
+        flex: 0 0 240px;
+    }
+
+    /* Admin: formulário 2 colunas */
+    .form-grid{
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Cozinha: no máximo 2 cards por linha */
+    .cozinha-grid{
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+}
+
+/* ── Tablet (≤ 768px) ───────────────────────────────── */
+@media (max-width: 768px) {
+
+    .container{
+        width: 95%;
+        padding: 0 10px;
+    }
+
+    header h1{
+        font-size: 20px;
+        margin: 14px 0;
+    }
+
+    /* Mesa: empilha cardápio acima do resumo do pedido */
+    .layout{
+        flex-direction: column;
+    }
+
+    .cardapio{
+        flex: unset;
+        width: 100%;
+    }
+
+    .pedido{
+        flex: unset;
+        width: 100%;
+        position: static;
+        box-sizing: border-box;
+        margin-top: 16px;
+    }
+
+    /* Produtos: 2 colunas em tablet */
+    .produtos-grid{
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    /* Admin: formulário e lista 1 coluna */
+    .form-grid{
+        grid-template-columns: 1fr;
+    }
+
+    #lista_produtos{
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    input{
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Mesas: 3 colunas em tablet */
+    .mesas-grid{
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 14px;
+    }
+
+    /* Cozinha: 1 coluna em tablet */
+    .cozinha-grid{
+        grid-template-columns: 1fr;
+    }
+
+    /* Card admin */
+    .card{
+        padding: 16px;
+    }
+
+    /* Modal */
+    .modal-content{
+        padding: 28px 18px;
+    }
+}
+
+/* ── Mobile (≤ 480px) ───────────────────────────────── */
+@media (max-width: 480px) {
+
+    .container{
+        width: 100%;
+        padding: 0 12px;
+    }
+
+    header h1{
+        font-size: 18px;
+        margin: 10px 0;
+    }
+
+    /* Produtos: 1 coluna */
+    .produtos-grid{
+        grid-template-columns: 1fr;
+    }
+
+    #lista_produtos{
+        grid-template-columns: 1fr;
+    }
+
+    /* Produto: linha horizontal compacta */
+    .produto{
+        padding: 10px 12px;
+    }
+
+    .produto h3{
+        font-size: 14px;
+    }
+
+    .produto p{
+        font-size: 12px;
+    }
+
+    /* Mesas: 2 colunas */
+    .mesas-grid{
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .mesa-card{
+        font-size: 14px;
+        padding: 16px 8px;
+    }
+
+    /* Fechar conta */
+    .btn-fechar{
+        font-size: 15px;
+        padding: 12px;
+    }
+
+    /* Status cozinha */
+    .btn-status{
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    /* Modal */
+    .modal-content{
+        padding: 20px 14px;
+    }
+
+    .modal-content h2{
+        font-size: 20px;
+    }
+
+    /* Card admin */
+    .card{
+        padding: 12px;
+    }
+}
+
+/* ── Muito pequeno (≤ 360px) ────────────────────────── */
+@media (max-width: 360px) {
+    header h1{ font-size: 16px; }
+    .mesa-card{ font-size: 13px; padding: 14px 6px; }
 }

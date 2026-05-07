@@ -15,10 +15,29 @@ def create_app():
     CORS(app)
 
     load_dotenv()
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+
+    db_uri = os.environ.get(
         "SQLALCHEMY_DATABASE_URI",
         "mysql+pymysql://root:@127.0.0.1:3306/restaurante",
     )
+
+    # Se não houver variável de ambiente e o MySQL local não estiver acessível,
+    # cai automaticamente para SQLite (útil para rodar sem Docker).
+    if "mysql" in db_uri:
+        try:
+            import pymysql
+            parts = db_uri.split("@")[-1].split("/")
+            host_port = parts[0].split(":")
+            host = host_port[0]
+            port = int(host_port[1]) if len(host_port) > 1 else 3306
+            conn = pymysql.connect(host=host, port=port, connect_timeout=2)
+            conn.close()
+        except Exception:
+            sqlite_path = os.path.join(os.path.dirname(__file__), "..", "restaurante.db")
+            db_uri = f"sqlite:///{os.path.abspath(sqlite_path)}"
+            print("⚠  MySQL não encontrado — usando SQLite:", db_uri)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)

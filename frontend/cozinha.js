@@ -44,33 +44,30 @@ async function carregarPedidos() {
             // Criar card
             const card = document.createElement("div");
             card.className = "pedido-card";
-            card.style.cssText = "border: 3px solid #333; padding: 20px; margin: 20px; width: 300px; display: inline-block; background: #fff3cd; border-radius: 10px; vertical-align: top;";
 
             // Criar título
             const titulo = document.createElement("h2");
             titulo.textContent = `Mesa ${p.mesa}`;
-            titulo.style.cssText = "margin: 0 0 10px 0; font-size: 20px;";
             card.appendChild(titulo);
 
             // Criar itens
             const ul = document.createElement("ul");
-            ul.style.cssText = "padding-left: 20px; margin: 0 0 15px 0; border-bottom: 2px solid #999; padding-bottom: 10px;";
+            ul.className = "pedido-itens-list";
             p.itens.forEach(item => {
                 const li = document.createElement("li");
                 li.textContent = `${item.quantidade}x ${item.produto}`;
-                li.style.cssText = "margin: 5px 0;";
                 ul.appendChild(li);
             });
             card.appendChild(ul);
 
             // Criar botões
             const botoesDiv = document.createElement("div");
-            botoesDiv.style.cssText = "display: flex; flex-direction: column; gap: 10px; margin-top: 15px;";
+            botoesDiv.className = "botoes-status";
 
             const btnEmPreparo = document.createElement("button");
             btnEmPreparo.textContent = "⏳ Em Preparo";
             btnEmPreparo.type = "button";
-            btnEmPreparo.style.cssText = "padding: 12px; background: #FFC107; border: 2px solid #FF9800; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;";
+            btnEmPreparo.className = "btn-status em-preparo";
             btnEmPreparo.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -82,7 +79,7 @@ async function carregarPedidos() {
             const btnPronto = document.createElement("button");
             btnPronto.textContent = "✅ Pronto";
             btnPronto.type = "button";
-            btnPronto.style.cssText = "padding: 12px; background: #28A745; color: white; border: 2px solid #27AE60; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;";
+            btnPronto.className = "btn-status pronto";
             btnPronto.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -94,7 +91,7 @@ async function carregarPedidos() {
             const btnEntregue = document.createElement("button");
             btnEntregue.textContent = "🚀 Entregue";
             btnEntregue.type = "button";
-            btnEntregue.style.cssText = "padding: 12px; background: #17A2B8; color: white; border: 2px solid #1E90FF; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;";
+            btnEntregue.className = "btn-status entregue";
             btnEntregue.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();

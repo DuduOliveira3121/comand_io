@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Mobile — Comand.io</title>
+  <style>
+    /* ── Page background ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 16px 60px;
+      color: #e0e0e0;
+    }
+
+    h1.page-title {
+      font-size: 22px;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+      color: #e0e0e0;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #7ecfff;
+      margin-bottom: 28px;
+    }
+
+    /* ── Page selector ── */
+    .page-selector {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .page-selector button {
+      padding: 8px 18px;
+      border: 1.5px solid rgba(126, 207, 255, 0.4);
+      background: rgba(255, 255, 255, 0.06);
+      color: #a0c8e8;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.25s;
+    }
+
+    .page-selector button:hover {
+      background: rgba(126, 207, 255, 0.15);
+      border-color: #7ecfff;
+      color: #fff;
+    }
+
+    .page-selector button.active {
+      background: #7ecfff;
+      border-color: #7ecfff;
+      color: #0f3460;
+      font-weight: bold;
+    }
+
+    /* ── Device switcher ── */
+    .device-switcher {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .device-btn {
+      padding: 6px 16px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: transparent;
+      color: #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .device-btn.active {
+      border-color: #f0a500;
+      color: #f0a500;
+      background: rgba(240, 165, 0, 0.1);
+    }
+
+    /* ── Phone wrapper ── */
+    .scene {
+      display: flex;
+      align-items: flex-start;
+      gap: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .phone-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .phone-label {
+      font-size: 12px;
+      color: #7ecfff;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── Phone shell ── */
+    .phone {
+      position: relative;
+      background: #1c1c1e;
+      border-radius: 44px;
+      box-shadow:
+        0 0 0 2px #3a3a3c,
+        0 0 0 5px #1c1c1e,
+        0 0 0 7px #3a3a3c,
+        0 30px 80px rgba(0,0,0,0.7);
+      transition: all 0.4s ease;
+    }
+
+    /* Portrait (default) */
+    .phone.portrait {
+      width: 320px;
+      height: 650px;
+      border-radius: 44px;
+    }
+
+    /* Landscape */
+    .phone.landscape {
+      width: 620px;
+      height: 320px;
+      border-radius: 24px;
+    }
+
+    /* Tablet portrait */
+    .phone.tablet {
+      width: 420px;
+      height: 680px;
+      border-radius: 20px;
+    }
+
+    /* ── Notch / Dynamic Island ── */
+    .notch {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 28px;
+      background: #1c1c1e;
+      border-radius: 20px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .notch .camera {
+      width: 10px;
+      height: 10px;
+      background: #2c2c2e;
+      border-radius: 50%;
+      border: 1.5px solid #3a3a3c;
+    }
+
+    .notch .speaker {
+      width: 40px;
+      height: 5px;
+      background: #2c2c2e;
+      border-radius: 4px;
+    }
+
+    .phone.landscape .notch {
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 90px;
+      flex-direction: column;
+    }
+
+    .phone.landscape .notch .speaker {
+      width: 5px;
+      height: 28px;
+    }
+
+    /* ── Side buttons ── */
+    .btn-side {
+      position: absolute;
+      background: #3a3a3c;
+      border-radius: 3px;
+    }
+
+    /* Power button right */
+    .btn-power {
+      right: -5px;
+      top: 130px;
+      width: 4px;
+      height: 60px;
+    }
+
+    /* Volume up / down left */
+    .btn-vol-up {
+      left: -5px;
+      top: 110px;
+      width: 4px;
+      height: 36px;
+    }
+
+    .btn-vol-down {
+      left: -5px;
+      top: 158px;
+      width: 4px;
+      height: 36px;
+    }
+
+    .btn-silent {
+      left: -5px;
+      top: 78px;
+      width: 4px;
+      height: 22px;
+    }
+
+    .phone.landscape .btn-power {
+      right: unset;
+      bottom: -5px;
+      left: 130px;
+      top: unset;
+      width: 60px;
+      height: 4px;
+    }
+
+    .phone.landscape .btn-vol-up {
+      left: unset;
+      top: -5px;
+      right: 160px;
+      width: 36px;
+      height: 4px;
+    }
+
+    .phone.landscape .btn-vol-down {
+      left: unset;
+      top: -5px;
+      right: 110px;
+      width: 36px;
+      height: 4px;
+    }
+
+    .phone.landscape .btn-silent {
+      left: unset;
+      top: -5px;
+      right: 198px;
+      width: 22px;
+      height: 4px;
+    }
+
+    /* ── Screen ── */
+    .screen {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      background: #000;
+      border-radius: 34px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone.landscape .screen {
+      border-radius: 16px;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      flex-shrink: 0;
+      height: 44px;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 24px;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .phone.landscape .status-bar {
+      height: 32px;
+      font-size: 11px;
+      padding: 0 48px 0 60px;
+    }
+
+    .status-time { font-size: 15px; font-weight: 700; }
+    .phone.landscape .status-time { font-size: 12px; }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-icons span {
+      font-size: 12px;
+    }
+
+    /* ── iframe ── */
+    .phone-iframe-wrap {
+      flex: 1;
+      overflow: hidden;
+      background: white;
+      position: relative;
+    }
+
+    .phone-iframe-wrap iframe {
+      width: 375px;
+      height: 100%;
+      border: none;
+      transform-origin: top left;
+      display: block;
+    }
+
+    /* ── Home bar ── */
+    .home-bar {
+      flex-shrink: 0;
+      height: 28px;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-bar-line {
+      width: 120px;
+      height: 4px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 4px;
+    }
+
+    .phone.landscape .home-bar {
+      height: 20px;
+    }
+
+    /* ── Info panel ── */
+    .info-panel {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px 24px;
+      min-width: 200px;
+      max-width: 260px;
+    }
+
+    .info-panel h3 {
+      font-size: 14px;
+      color: #7ecfff;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      color: #bbb;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-row strong { color: #fff; }
+
+    /* ── Rotate hint ── */
+    .hint {
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="page-title">📱 Simulador Mobile</h1>
+  <p class="subtitle">Comand.io — Visualização responsiva</p>
+
+  <!-- Page selector -->
+  <div class="page-selector">
+    <button class="active" onclick="loadPage(this, '/mesa.html?mesa=1')">Mesa (Cliente)</button>
+    <button onclick="loadPage(this, '/mesas')">Painel de Mesas</button>
+    <button onclick="loadPage(this, '/cozinha')">Cozinha</button>
+    <button onclick="loadPage(this, '/admin')">Admin</button>
+  </div>
+
+  <!-- Device switcher -->
+  <div class="device-switcher">
+    <button class="device-btn active" onclick="setDevice(this, 'portrait')">Portrait</button>
+    <button class="device-btn" onclick="setDevice(this, 'landscape')">Landscape</button>
+    <button class="device-btn" onclick="setDevice(this, 'tablet')">Tablet</button>
+  </div>
+
+  <div class="scene">
+
+    <!-- Phone shell -->
+    <div class="phone-wrapper">
+      <div class="phone-label" id="device-label">iPhone 14 Pro — 390×844</div>
+
+      <div class="phone portrait" id="phone">
+        <!-- Notch -->
+        <div class="notch">
+          <div class="speaker"></div>
+          <div class="camera"></div>
+        </div>
+
+        <!-- Side buttons -->
+        <div class="btn-side btn-silent"></div>
+        <div class="btn-side btn-vol-up"></div>
+        <div class="btn-side btn-vol-down"></div>
+        <div class="btn-side btn-power"></div>
+
+        <!-- Screen -->
+        <div class="screen">
+          <div class="status-bar">
+            <span class="status-time" id="clock">09:41</span>
+            <div class="status-icons">
+              <span>●●●●</span>
+              <span>WiFi</span>
+              <span>🔋</span>
+            </div>
+          </div>
+
+          <div class="phone-iframe-wrap" id="iframe-wrap">
+            <iframe id="phone-iframe" src="/mesa.html?mesa=1" title="App Preview"></iframe>
+          </div>
+
+          <div class="home-bar">
+            <div class="home-bar-line"></div>
+          </div>
+        </div>
+      </div>
+      <!-- /phone -->
+
+      <p class="hint">Use os botões acima para trocar de página ou dispositivo</p>
+    </div>
+
+    <!-- Info panel -->
+    <div class="info-panel">
+      <h3>Dispositivo</h3>
+      <div class="info-row"><span>Modelo</span><strong id="info-model">iPhone 14 Pro</strong></div>
+      <div class="info-row"><span>Resolução</span><strong id="info-res">390 × 844</strong></div>
+      <div class="info-row"><span>Orientação</span><strong id="info-orient">Portrait</strong></div>
+      <div class="info-row"><span>Viewport CSS</span><strong id="info-vp">375 × 812px</strong></div>
+      <div class="info-row"><span>Página atual</span><strong id="info-page">Mesa</strong></div>
+
+      <h3 style="margin-top:20px;">Breakpoints</h3>
+      <div class="info-row"><span>Mobile</span><strong>≤ 600px ✅</strong></div>
+      <div class="info-row"><span>Tablet</span><strong>≤ 900px ✅</strong></div>
+      <div class="info-row"><span>Desktop</span><strong>> 900px ✅</strong></div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ── Clock ── */
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${h}:${m}`;
+    }
+    updateClock();
+    setInterval(updateClock, 10000);
+
+    /* ── Device configs ── */
+    const devices = {
+      portrait: {
+        label: 'iPhone 14 Pro — 390×844',
+        model: 'iPhone 14 Pro',
+        res: '390 × 844',
+        orient: 'Portrait',
+        vp: '375 × 812px',
+        phoneW: 320,
+        iframeW: 375,
+        cssClass: 'portrait',
+      },
+      landscape: {
+        label: 'iPhone 14 Pro — 844×390',
+        model: 'iPhone 14 Pro',
+        res: '844 × 390',
+        orient: 'Landscape',
+        vp: '812 × 375px',
+        phoneW: 620,
+        iframeW: 812,
+        cssClass: 'landscape',
+      },
+      tablet: {
+        label: 'iPad Air — 820×1180',
+        model: 'iPad Air',
+        res: '820 × 1180',
+        orient: 'Portrait',
+        vp: '768 × 1024px',
+        phoneW: 420,
+        iframeW: 768,
+        cssClass: 'tablet',
+      },
+    };
+
+    let currentDevice = 'portrait';
+
+    function setDevice(btn, mode) {
+      document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDevice = mode;
+      applyDevice();
+    }
+
+    function applyDevice() {
+      const cfg = devices[currentDevice];
+      const phone = document.getElementById('phone');
+      const wrap = document.getElementById('iframe-wrap');
+      const iframe = document.getElementById('phone-iframe');
+
+      phone.className = 'phone ' + cfg.cssClass;
+      document.getElementById('device-label').textContent = cfg.label;
+      document.getElementById('info-model').textContent = cfg.model;
+      document.getElementById('info-res').textContent = cfg.res;
+      document.getElementById('info-orient').textContent = cfg.orient;
+      document.getElementById('info-vp').textContent = cfg.vp;
+
+      /* Scale iframe to fit the screen area */
+      const screenW = cfg.cssClass === 'landscape' ? cfg.phoneW - 24 : cfg.phoneW - 24;
+      const scale = screenW / cfg.iframeW;
+      iframe.style.width = cfg.iframeW + 'px';
+      iframe.style.transform = `scale(${scale})`;
+      wrap.style.height = ''; /* reset – flex handles it */
+    }
+
+    applyDevice();
+
+    /* ── Page loader ── */
+    function loadPage(btn, url) {
+      document.querySelectorAll('.page-selector button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('phone-iframe').src = url;
+      const pageName = btn.textContent.trim();
+      document.getElementById('info-page').textContent = pageName;
+    }
+  </script>
+</body>
+</html>

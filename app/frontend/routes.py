@@ -31,6 +31,10 @@ def cozinha():
 def admin():
     return send_from_directory(FRONTEND_DIR, "admin.html")
 
+@frontend_bp.route("/mobile-preview")
+def mobile_preview():
+    return send_from_directory(FRONTEND_DIR, "mobile_preview.html")
+
 @frontend_bp.route("/<path:filename>")
 def static_files(filename):
     """Serve any other file from frontend folder (JS, CSS, etc)"""
