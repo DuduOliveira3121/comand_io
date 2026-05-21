@@ -123,6 +123,103 @@ header{
     background:#c82333;
 }
 
+/* -------- CARRINHO / FAZER PEDIDO -------- */
+
+.pedido-carrinho{
+    margin-bottom: 4px;
+}
+
+.item-carrinho{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.item-carrinho .item-nome{
+    flex: 1;
+    font-size: 14px;
+}
+
+.item-carrinho .item-preco{
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+}
+
+.btn-remover{
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.btn-remover:hover{
+    color: #a71d2a;
+}
+
+.btn-fazer-pedido{
+    width: 100%;
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px 0 14px;
+}
+
+.btn-fazer-pedido:hover{
+    background: #218838;
+}
+
+.btn-fazer-pedido:disabled{
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.pedido-enviado{
+    margin-top: 4px;
+}
+
+.label-enviado{
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 4px;
+}
+
+.item-enviado{
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+.sem-itens{
+    color: #bbb;
+    font-size: 13px;
+    text-align: center;
+    padding: 10px 0;
+    margin: 0;
+}
+
+.area-fechar-conta{
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+
 /* -------- ADMIN -------- */
 
 .card{

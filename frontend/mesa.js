@@ -20,6 +20,9 @@ document.getElementById("titulo").innerText = "Mesa " + mesa
 document.getElementById("titulo").innerText = "Mesa " + mesa
 
 let pedido_id = null
+let carrinho = []
+let produtosCache = []
+let totalEnviado = 0
 
 // =========================
 // PRODUTOS
@@ -30,6 +33,7 @@ async function carregarProdutos(){
     try {
         const res = await fetch(`${API}/produtos/`)
         const produtos = await res.json()
+        produtosCache = produtos
 
         console.log("✅ Produtos carregados:", produtos.length, "itens")
 
@@ -64,46 +68,42 @@ async function carregarProdutos(){
 }
 
 // =========================
-// PEDIR ITEM
+// PEDIR ITEM (adiciona ao carrinho local)
 // =========================
 
 async function pedir(produto_id){
 
-    try {
-        // Se não há pedido, abre/cria novo antes de adicionar
-        if(!pedido_id){
-            console.log("⏳ Sem pedido, abrindo mesa para novo pedido...")
-            await verificarMesa()
-        }
-
-        // Se AINDA não há pedido, aborta
-        if(!pedido_id){
-            alert("Falha ao abrir pedido. Tente novamente.")
-            return
-        }
-
-        const res = await fetch(`${API}/pedidos/${pedido_id}/itens`,{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({
-                produto_id:produto_id,
-                quantidade:1
-            })
-        })
-        
-        const data = await res.json()
-        console.log("✅ Item adicionado ao pedido:", data)
-        await carregarPedido()
-    } catch (erro) {
-        console.error("❌ Erro ao pedir item:", erro)
-        alert("Erro ao adicionar item")
+    // Garante que a mesa está aberta antes de adicionar ao carrinho
+    if(!pedido_id){
+        console.log("⏳ Sem pedido, abrindo mesa...")
+        await verificarMesa()
     }
+
+    if(!pedido_id){
+        alert("Falha ao abrir mesa. Tente novamente.")
+        return
+    }
+
+    const produto = produtosCache.find(p => p.id === produto_id)
+    if(!produto) return
+
+    const existente = carrinho.find(item => item.produto_id === produto_id)
+    if(existente){
+        existente.quantidade += 1
+    } else {
+        carrinho.push({
+            produto_id: produto_id,
+            nome: produto.nome,
+            preco: produto.preco,
+            quantidade: 1
+        })
+    }
+
+    renderCarrinho()
 }
 
 // =========================
-// CARREGAR PEDIDO
+// CARREGAR PEDIDO (itens já enviados — exibidos em cinza)
 // =========================
 
 async function carregarPedido(){
@@ -114,37 +114,130 @@ async function carregarPedido(){
 
         console.log("✅ Resposta da API para mesa", mesa, ":", pedido)
 
+        const divEnviado = document.getElementById("pedido-enviado")
+
         if(!pedido.pedido_id){
-            document.getElementById("pedido").innerHTML = "<b>Mesa não aberta</b>"
-            document.getElementById("total").innerText = "Total: R$ 0.00"
+            divEnviado.innerHTML = ""
+            totalEnviado = 0
+            atualizarTotal()
             return
         }
 
         pedido_id = pedido.pedido_id
 
-        let html = ""
+        if(pedido.itens.length === 0){
+            divEnviado.innerHTML = ""
+            totalEnviado = 0
+            atualizarTotal()
+            return
+        }
+
+        let html = "<p class='label-enviado'>Já pedido:</p>"
         let total = 0
 
         pedido.itens.forEach(item => {
-
             const subtotal = item.quantidade * item.preco_unitario
             total += subtotal
-
             html += `
-            <p>
-                ${item.produto} x${item.quantidade} — R$ ${subtotal.toFixed(2)}
-            </p>
+            <div class="item-enviado">
+                <span>${item.produto} x${item.quantidade}</span>
+                <span>R$ ${subtotal.toFixed(2)}</span>
+            </div>
             `
         })
 
-        document.getElementById("pedido").innerHTML = html
-
-        // 🔥 FORÇA o total correto (mesmo se backend falhar)
-        document.getElementById("total").innerText =
-            "Total: R$ " + total.toFixed(2)
+        divEnviado.innerHTML = html
+        totalEnviado = total
+        atualizarTotal()
     } catch (erro) {
         console.error("❌ Erro ao carregar pedido:", erro)
     }
+}
+
+// =========================
+// CARRINHO LOCAL
+// =========================
+
+function renderCarrinho(){
+    const div = document.getElementById("pedido-carrinho")
+    const btnFazer = document.getElementById("btn-fazer-pedido")
+
+    if(carrinho.length === 0){
+        div.innerHTML = "<p class='sem-itens'>Adicione itens do cardápio</p>"
+        btnFazer.style.display = "none"
+        atualizarTotal()
+        return
+    }
+
+    let html = ""
+    carrinho.forEach((item, index) => {
+        const subtotal = item.quantidade * item.preco
+        html += `
+        <div class="item-carrinho">
+            <span class="item-nome">${item.nome} x${item.quantidade}</span>
+            <span class="item-preco">R$ ${subtotal.toFixed(2)}</span>
+            <button class="btn-remover" onclick="removerDoCarrinho(${index})" title="Remover">✕</button>
+        </div>
+        `
+    })
+
+    div.innerHTML = html
+    btnFazer.style.display = "block"
+    atualizarTotal()
+}
+
+function removerDoCarrinho(index){
+    carrinho.splice(index, 1)
+    renderCarrinho()
+}
+
+// =========================
+// FAZER PEDIDO
+// =========================
+
+async function fazerPedido(){
+    if(carrinho.length === 0){
+        alert("Carrinho vazio!")
+        return
+    }
+
+    const btn = document.getElementById("btn-fazer-pedido")
+    btn.disabled = true
+    btn.textContent = "Enviando..."
+
+    try {
+        for(const item of carrinho){
+            await fetch(`${API}/pedidos/${pedido_id}/itens`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    produto_id: item.produto_id,
+                    quantidade: item.quantidade
+                })
+            })
+        }
+        carrinho = []
+        renderCarrinho()
+        await carregarPedido()
+    } catch (erro) {
+        console.error("❌ Erro ao fazer pedido:", erro)
+        alert("Erro ao fazer pedido. Tente novamente.")
+    } finally {
+        btn.disabled = false
+        btn.textContent = "✓ Fazer pedido"
+    }
+}
+
+// =========================
+// ATUALIZAR TOTAL
+// =========================
+
+function atualizarTotal(){
+    const totalCarrinho = carrinho.reduce(
+        (sum, item) => sum + item.quantidade * item.preco, 0
+    )
+    document.getElementById("total").innerText =
+        "Total: R$ " + (totalCarrinho + totalEnviado).toFixed(2)
 }
 
 // =========================
@@ -313,8 +406,10 @@ async function init(){
         
         await carregarProdutos()
         console.log("✅ Produtos carregados")
+
+        renderCarrinho()
         
-        await carregarPedido()  // 🔥 garante atualização depois
+        await carregarPedido()
         console.log("✅ Pedido carregado")
 
         // 🔥 atualização automática (igual cozinha)
