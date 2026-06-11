@@ -31,6 +31,10 @@ def cozinha():
 def admin():
     return send_from_directory(FRONTEND_DIR, "admin.html")
 
+@frontend_bp.route("/pagamento/<int:pedido_id>")
+def pagamento(pedido_id):
+    return send_from_directory(FRONTEND_DIR, "pagamento.html")
+
 @frontend_bp.route("/mobile-preview")
 def mobile_preview():
     return send_from_directory(FRONTEND_DIR, "mobile_preview.html")

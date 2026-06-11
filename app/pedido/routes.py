@@ -86,7 +86,7 @@ def pedido_da_mesa(mesa_numero):
     # Aceita qualquer status que ainda esteja sendo preparado
     pedido = Pedido.query.filter(
         Pedido.mesa_id == mesa.id,
-        Pedido.status.in_(["aberto", "em_preparo", "pronto"])
+        Pedido.status.in_(["aberto", "em_preparo", "pronto", "entregue"])
     ).first()
 
     if not pedido:

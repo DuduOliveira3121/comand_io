@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagamento</title>
+<link rel="stylesheet" href="/style.css?v=2">
+<style>
+  .pagamento-container { max-width: 520px; margin: 0 auto; }
+  .resumo-card { background: #f9f9f9; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .resumo-card h3 { margin: 0 0 8px; }
+  .resumo-item { display: flex; justify-content: space-between; font-size: 0.95rem; padding: 2px 0; }
+  .saldo-destaque { font-size: 1.3rem; font-weight: bold; color: #e74c3c; margin-top: 8px; }
+  .saldo-pago { color: #27ae60; }
+  .pagamentos-lista { margin: 12px 0; }
+  .pagamento-item { background: #eaf7ea; border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; font-size: 0.9rem; display: flex; justify-content: space-between; }
+  .metodo-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .metodo-tab { flex: 1; padding: 10px 4px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; }
+  .metodo-tab.ativo { border-color: #2ecc71; background: #eafaf1; color: #1a7a3a; }
+  .painel { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; display: none; }
+  .painel.ativo { display: block; }
+  .painel h3 { margin: 0 0 12px; }
+  .painel label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.9rem; }
+  .painel input { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 14px; box-sizing: border-box; }
+  .btn-confirmar { width: 100%; padding: 12px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: bold; margin-top: 4px; }
+  .btn-confirmar:disabled { background: #95a5a6; cursor: not-allowed; }
+  .pix-qr-area { text-align: center; margin: 12px 0; }
+  .pix-qr-area img { max-width: 200px; border: 4px solid #eee; border-radius: 8px; }
+  .pix-chave { background: #f4f4f4; border-radius: 6px; padding: 10px 14px; font-size: 0.9rem; word-break: break-all; margin: 8px 0; }
+  .btn-copiar { padding: 7px 16px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-bottom: 4px; }
+  .garcom-box { text-align: center; padding: 12px 0; }
+  .btn-chamar { width: 100%; padding: 14px; background: #e67e22; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; letter-spacing: 0.5px; transition: transform 0.1s; }
+  .btn-chamar:active { transform: scale(0.97); }
+  .garcom-chamado { display: none; background: #fef5e7; border: 2px solid #e67e22; border-radius: 8px; padding: 16px; text-align: center; margin-top: 12px; }
+  .garcom-chamado p { margin: 0; font-weight: 600; color: #784212; font-size: 1rem; }
+  .instrucoes { background: #fef9e7; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
+  .instrucoes p { margin: 6px 0; font-size: 0.95rem; }
+  .metodo-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+  .metodo-pix { background: #d5f5e3; color: #1e8449; }
+  .metodo-cartao { background: #d6eaf8; color: #1a5276; }
+  .metodo-dinheiro { background: #fef9e7; color: #7d6608; }
+  .conta-fechada { text-align: center; padding: 32px; background: #eaf7ea; border-radius: 8px; display: none; }
+  .conta-fechada h2 { color: #27ae60; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header><h1>Pagamento</h1></header>
+  <div class="pagamento-container">
+
+    <div class="resumo-card">
+      <h3>Resumo do Pedido</h3>
+      <div id="itens-lista"></div>
+      <hr>
+      <div class="resumo-item"><span>Total do pedido</span><span id="total-pedido">R$ 0,00</span></div>
+      <div class="resumo-item saldo-pago"><span>Pago ate agora</span><span id="total-pago">R$ 0,00</span></div>
+      <div class="resumo-item saldo-destaque"><span>Restante</span><span id="total-restante">R$ 0,00</span></div>
+    </div>
+
+    <div id="pagamentos-realizados" class="pagamentos-lista" style="display:none">
+      <h3>Pagamentos Realizados</h3>
+      <div id="lista-pagamentos"></div>
+    </div>
+
+    <div class="metodo-tabs" id="metodo-tabs">
+      <button class="metodo-tab ativo" onclick="selecionarAba('pix', this)">PIX</button>
+      <button class="metodo-tab" onclick="selecionarAba('cartao', this)">Cartão</button>
+      <button class="metodo-tab" onclick="selecionarAba('dinheiro', this)">Dinheiro</button>
+    </div>
+
+    <div class="painel ativo" id="painel-pix">
+      <h3>📲 Pagar com PIX</h3>
+      <div style="background:#e8f4fd;border-left:4px solid #3498db;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.88rem;color:#1a5276;">
+        <strong>⚠️ Como escanear:</strong> Abra o <strong>app do seu banco</strong> → PIX → Pagar → Ler QR Code.<br>
+        <span style="color:#555;">Não use a câmera nativa do iPhone/Android — ela não abre pagamento PIX.</span>
+      </div>
+      <label>Valor (R$)</label>
+      <input type="number" id="valor-pix" min="0.01" step="0.01">
+      <button class="btn-confirmar" id="btn-gerar-pix" onclick="gerarQrPix()">Gerar QR Code</button>
+      <div id="pix-resultado" style="display:none">
+        <div class="pix-qr-area"><img id="pix-qr-img" src="" alt="QR Code PIX"></div>
+        <p style="margin:8px 0 4px;font-weight:600;">Chave PIX:</p>
+        <div class="pix-chave" id="pix-chave-texto"></div>
+        <p style="margin:8px 0 4px;font-weight:600;">Código copia e cola:</p>
+        <div class="pix-chave" id="pix-copia-cola" style="font-size:0.72rem;"></div>
+        <button class="btn-copiar" onclick="copiarPix()">Copiar código</button>
+        <button class="btn-confirmar" id="btn-ja-paguei" onclick="confirmarPix()" style="background:#27ae60;margin-top:8px;">Já paguei ✔</button>
+      </div>
+    </div>
+
+    <div class="painel" id="painel-cartao">
+      <h3>💳 Pagar com Cartão</h3>
+      <p style="color:#555;margin:0 0 16px;">O garçom irá até sua mesa com a máquina de cartão.</p>
+      <div class="garcom-box">
+        <button class="btn-chamar" onclick="chamarGarcom()">🔔 Chamar Garçom</button>
+        <div class="garcom-chamado" id="garcom-chamado">
+          <p>✅ Garçom chamado! Aguarde, ele já está a caminho.</p>
+        </div>
+      </div>
+      <div style="margin-top:20px;">
+        <label>Valor pago no cartão (R$)</label>
+        <input type="number" id="valor-cartao" min="0.01" step="0.01">
+        <button class="btn-confirmar" onclick="confirmarCartao()">Confirmar pagamento no cartão</button>
+      </div>
+    </div>
+
+    <div class="painel" id="painel-dinheiro">
+      <h3>💵 Pagar em Dinheiro</h3>
+      <div class="instrucoes">
+        <p>📍 Vá até o <strong>caixa do restaurante</strong>.</p>
+        <p>💬 Informe o <strong>número da sua mesa</strong> e o valor a pagar.</p>
+        <p>✅ Após o pagamento, clique no botão abaixo para fechar a conta.</p>
+      </div>
+      <label>Valor pago (R$)</label>
+      <input type="number" id="valor-dinheiro" min="0.01" step="0.01">
+      <button class="btn-confirmar" onclick="confirmarDinheiro()">Confirmar pagamento no caixa</button>
+    </div>
+
+    <div class="conta-fechada" id="conta-fechada">
+      <h2>✅ Conta Fechada!</h2>
+      <p>Obrigado pela visita. Bom apetite!</p>
+      <button onclick="window.location.href='/mesas'" style="padding:10px 24px;background:#2ecc71;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">Voltar ao Painel</button>
+    </div>
+
+  </div>
+</div>
+<script src="/pagamento.js?v=4"></script>
+</body>
+</html>

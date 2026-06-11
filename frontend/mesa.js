@@ -247,17 +247,19 @@ function atualizarTotal(){
 async function fecharPedido(){
 
     if(!pedido_id){
+        try {
+            const res = await fetch(`${API}/pedidos/mesa/${mesa}`)
+            const dados = await res.json()
+            if(dados.pedido_id) pedido_id = dados.pedido_id
+        } catch(e) {}
+    }
+
+    if(!pedido_id){
         alert("Pedido não encontrado")
         return
     }
 
-    await fetch(`${API}/pedidos/fechar/${pedido_id}`,{
-        method:"POST"
-    })
-
-    alert("Conta encerrada")
-
-    location.reload()
+    window.location.href = `/pagamento/${pedido_id}`
 }
 
 // =========================

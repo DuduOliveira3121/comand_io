@@ -1,6 +1,7 @@
 from app import create_app
 from app.extensions import db
 from app.models import mesa, pedido, produto, item_pedido
+from app.models import pagamento
 from app.models.mesa import Mesa
 from app.models.produto import Produto
 
