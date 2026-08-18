@@ -148,6 +148,26 @@ header{
     white-space: nowrap;
 }
 
+.input-observacao-pedido{
+    width: 100%;
+    margin: 8px 0;
+    padding: 8px;
+    font-size: 13px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: vertical;
+    min-height: 44px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.observacao-geral{
+    font-style: italic;
+    font-size: 13px;
+    color: #666;
+    margin: 4px 0 0;
+}
+
 .btn-remover{
     background: none;
     border: none;
@@ -353,6 +373,18 @@ input{
     margin:0 0 0 0;
     padding-bottom:12px;
     border-bottom:2px solid #ccc;
+}
+
+.pedido-observacao-cozinha{
+    font-style: italic;
+    font-weight: 600;
+    font-size: 16px;
+    color: #7a4b00;
+    background: #fff0c2;
+    border-left: 3px solid #f0ad4e;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: -2px 0 10px;
 }
 
 

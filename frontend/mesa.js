@@ -146,6 +146,10 @@ async function carregarPedido(){
             `
         })
 
+        if(pedido.observacao){
+            html += `<p class="observacao-geral">Observação: ${pedido.observacao}</p>`
+        }
+
         divEnviado.innerHTML = html
         totalEnviado = total
         atualizarTotal()
@@ -216,6 +220,18 @@ async function fazerPedido(){
                 })
             })
         }
+
+        const inputObs = document.getElementById("observacao-pedido")
+        const observacao = inputObs ? inputObs.value.trim() : ""
+        if(observacao){
+            await fetch(`${API}/pedidos/${pedido_id}/observacao`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ observacao: observacao })
+            })
+            inputObs.value = ""
+        }
+
         carrinho = []
         renderCarrinho()
         await carregarPedido()

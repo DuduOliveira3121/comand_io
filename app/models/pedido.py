@@ -16,6 +16,8 @@ class Pedido(db.Model):
 
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
 
+    observacao = db.Column(db.String(255), nullable=True)
+
     itens = db.relationship("ItemPedido", backref="pedido", lazy=True)
 
     def calcular_total(self):

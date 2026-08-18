@@ -43,6 +43,32 @@ def adicionar_item(pedido_id):
 
 
 # =========================
+# ATUALIZAR OBSERVAÇÃO GERAL DO PEDIDO
+# =========================
+@pedido_bp.route("/<int:pedido_id>/observacao", methods=["POST"])
+def atualizar_observacao(pedido_id):
+
+    data = request.get_json()
+    observacao = data.get("observacao")
+
+    if observacao is not None:
+        observacao = observacao.strip() or None
+
+    pedido = Pedido.query.get(pedido_id)
+
+    if not pedido:
+        return jsonify({"erro": "Pedido não encontrado"}), 404
+
+    pedido.observacao = observacao
+    db.session.commit()
+
+    return jsonify({
+        "mensagem": "Observação atualizada",
+        "observacao": pedido.observacao
+    })
+
+
+# =========================
 # BUSCAR PEDIDO
 # =========================
 @pedido_bp.route("/<int:id>")
@@ -56,6 +82,7 @@ def buscar_pedido(id):
     return jsonify({
         "id": pedido.id,
         "total": pedido.calcular_total(),
+        "observacao": pedido.observacao,
         "itens": [
             {
                 "produto": i.produto.nome,
@@ -108,6 +135,7 @@ def pedido_da_mesa(mesa_numero):
     return jsonify({
         "pedido_id": pedido.id,
         "itens": itens,
+        "observacao": pedido.observacao,
         "total": pedido.calcular_total()
     })
 
@@ -204,7 +232,8 @@ def pedidos_cozinha():
         resultado.append({
             "pedido_id": pedido.id,
             "mesa": mesa.numero if mesa else "?",
-            "itens": itens
+            "itens": itens,
+            "observacao": pedido.observacao
         })
 
     return jsonify(resultado)

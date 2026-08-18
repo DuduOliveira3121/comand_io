@@ -50,6 +50,13 @@ async function carregarPedidos() {
             titulo.textContent = `Mesa ${p.mesa}`;
             card.appendChild(titulo);
 
+            if (p.observacao) {
+                const obs = document.createElement("p");
+                obs.className = "pedido-observacao-cozinha";
+                obs.textContent = `Obs: ${p.observacao}`;
+                card.appendChild(obs);
+            }
+
             // Criar itens
             const ul = document.createElement("ul");
             ul.className = "pedido-itens-list";

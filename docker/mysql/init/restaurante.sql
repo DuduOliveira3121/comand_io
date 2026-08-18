@@ -99,7 +99,8 @@ CREATE TABLE `pedidos` (
   `mesa_id` int(11) NOT NULL,
   `status` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `data_criacao` datetime DEFAULT NULL
+  `data_criacao` datetime DEFAULT NULL,
+  `observacao` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
