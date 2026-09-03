@@ -22,7 +22,9 @@ document.getElementById("titulo").innerText = "Mesa " + mesa
 let pedido_id = null
 let carrinho = []
 let produtosCache = []
+let categoriasCache = []
 let totalEnviado = 0
+let categoriaSelecionadaId = null   // null = "Todos"
 
 // =========================
 // PRODUTOS
@@ -31,40 +33,84 @@ let totalEnviado = 0
 async function carregarProdutos(){
 
     try {
-        const res = await fetch(`${API}/produtos/`)
-        const produtos = await res.json()
-        produtosCache = produtos
+        // Carrega categorias (para o filtro lateral) e produtos em paralelo
+        const [resCat, resProd] = await Promise.all([
+            fetch(`${API}/categorias/`),
+            fetch(`${API}/produtos/`)
+        ])
 
-        console.log("✅ Produtos carregados:", produtos.length, "itens")
+        categoriasCache = await resCat.json()
+        produtosCache = await resProd.json()
 
-        const div = document.getElementById("produtos")
+        console.log("✅ Produtos carregados:", produtosCache.length, "itens")
 
-        let html = ""
-
-        produtos.forEach(p => {
-
-            html += `
-            <div class="produto">
-
-                <div class="produto-info">
-                    <h3>${p.nome}</h3>
-                    <p>${p.descricao}</p>
-                    <b>R$ ${Number(p.preco).toFixed(2)}</b>
-                </div>
-
-                <button class="botao-add" onclick="pedir(${p.id})">
-                    Adicionar
-                </button>
-
-            </div>
-            `
-        })
-
-        div.innerHTML = html
+        renderFiltroCategorias()
+        renderProdutos()
     } catch (erro) {
         console.error("❌ Erro ao carregar produtos:", erro)
         document.getElementById("produtos").innerHTML = "<p>Erro ao carregar produtos</p>"
     }
+}
+
+// Monta o filtro lateral: "Todos" + cada categoria cadastrada
+function renderFiltroCategorias(){
+
+    const div = document.getElementById("filtro-categorias")
+    if(!div) return
+
+    let html = `<button class="btn-categoria${categoriaSelecionadaId === null ? " ativa" : ""}"
+        onclick="selecionarCategoria(null)">Todos</button>`
+
+    categoriasCache.forEach(c => {
+        const ativa = c.id === categoriaSelecionadaId ? " ativa" : ""
+        html += `<button class="btn-categoria${ativa}" onclick="selecionarCategoria(${c.id})">${c.nome}</button>`
+    })
+
+    div.innerHTML = html
+}
+
+function selecionarCategoria(id){
+    categoriaSelecionadaId = id
+    renderFiltroCategorias()
+    renderProdutos()
+}
+
+// Renderiza a lista de produtos respeitando a categoria selecionada
+function renderProdutos(){
+
+    const div = document.getElementById("produtos")
+
+    const produtos = categoriaSelecionadaId === null
+        ? produtosCache
+        : produtosCache.filter(p => p.categoria_id === categoriaSelecionadaId)
+
+    if(produtos.length === 0){
+        div.innerHTML = "<p>Nenhum produto nesta categoria</p>"
+        return
+    }
+
+    let html = ""
+
+    produtos.forEach(p => {
+
+        html += `
+        <div class="produto">
+
+            <div class="produto-info">
+                <h3>${p.nome}</h3>
+                <p>${p.descricao}</p>
+                <b>R$ ${Number(p.preco).toFixed(2)}</b>
+            </div>
+
+            <button class="botao-add" onclick="pedir(${p.id})">
+                Adicionar
+            </button>
+
+        </div>
+        `
+    })
+
+    div.innerHTML = html
 }
 
 // =========================

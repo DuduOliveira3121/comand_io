@@ -740,3 +740,50 @@ input{
     header h1{ font-size: 16px; }
     .mesa-card{ font-size: 13px; padding: 14px 6px; }
 }
+/* Tag de categoria do produto (admin) */
+.categoria-tag {
+    display: inline-block;
+    background: #eef;
+    color: #334;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 12px;
+    margin: 4px 0;
+}
+
+/* Layout do cardápio: filtro lateral + grade de produtos */
+.cardapio-layout {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.cardapio-layout .produtos-grid {
+    flex: 1;
+}
+
+/* Filtro lateral de categorias */
+.filtro-categorias {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 150px;
+    margin-bottom: 12px;
+}
+@media (max-width: 600px) {
+    .cardapio-layout { flex-direction: column; }
+    .filtro-categorias { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+}
+.btn-categoria {
+    border: 1px solid #ccd;
+    background: #fff;
+    color: #334;
+    border-radius: 16px;
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.btn-categoria.ativa {
+    background: #334;
+    color: #fff;
+    border-color: #334;
+}
