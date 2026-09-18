@@ -9,6 +9,13 @@ class Produto(db.Model):
     descricao = db.Column(db.String(255))
     preco = db.Column(db.Float, nullable=False)
     disponivel = db.Column(db.Boolean, default=True)
+    categoria_id = db.Column(
+        db.Integer,
+        db.ForeignKey("categorias.id"),
+        nullable=True
+    )
+
+    categoria = db.relationship("Categoria")
 
     def to_dict(self):
         return {
@@ -16,5 +23,7 @@ class Produto(db.Model):
             "nome": self.nome,
             "descricao": self.descricao,
             "preco": self.preco,
-            "disponivel": self.disponivel
+            "disponivel": self.disponivel,
+            "categoria_id": self.categoria_id,
+            "categoria": self.categoria.nome if self.categoria else None
         }

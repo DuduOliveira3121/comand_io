@@ -6,6 +6,7 @@ from .extensions import db
 from .mesa.routes import mesa_bp
 from app.pedido.routes import pedido_bp
 from app.produto.routes import produto_bp
+from app.categoria.routes import categoria_bp
 from app.frontend.routes import frontend_bp
 from app.pagamento.routes import pagamento_bp
 from flask_cors import CORS
@@ -56,6 +57,7 @@ def create_app():
     app.register_blueprint(mesa_bp)
     app.register_blueprint(pedido_bp)
     app.register_blueprint(produto_bp)
+    app.register_blueprint(categoria_bp)
     app.register_blueprint(frontend_bp)
     app.register_blueprint(pagamento_bp)
 

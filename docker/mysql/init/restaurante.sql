@@ -100,7 +100,8 @@ CREATE TABLE `pedidos` (
   `status` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `data_criacao` datetime DEFAULT NULL,
-  `observacao` varchar(255) DEFAULT NULL
+  `observacao` varchar(255) DEFAULT NULL,
+  `categoria` varchar(50) DEFAULT 'Mesa'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -116,6 +117,28 @@ INSERT INTO `pedidos` (`id`, `mesa_id`, `status`, `data_criacao`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `categorias`
+--
+
+CREATE TABLE `categorias` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `categorias`
+--
+
+INSERT INTO `categorias` (`id`, `nome`) VALUES
+(1, 'Bebidas'),
+(2, 'Entradas'),
+(3, 'Pratos Principais'),
+(4, 'Sobremesas'),
+(5, 'Porções');
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `produtos`
 --
 
@@ -124,23 +147,24 @@ CREATE TABLE `produtos` (
   `nome` varchar(100) NOT NULL,
   `descricao` varchar(255) DEFAULT NULL,
   `preco` float NOT NULL,
-  `disponivel` tinyint(1) DEFAULT NULL
+  `disponivel` tinyint(1) DEFAULT NULL,
+  `categoria_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Despejando dados para a tabela `produtos`
 --
 
-INSERT INTO `produtos` (`id`, `nome`, `descricao`, `preco`, `disponivel`) VALUES
-(1, 'Hambúrguer', 'Hambúrguer caseiro', 25, 1),
-(2, 'Pizza Margherita', 'Pizza tradicional', 35, 1),
-(3, 'Refrigerante', '2L', 10, 1),
-(4, 'Cerveja', 'Pilsen 600ml', 8, 1),
-(5, 'Batata Frita', 'Porção grande', 18, 1),
-(6, 'Agua', '500ml', 2, 1),
-(7, 'X-Burger', 'Pão com carne, acompanhado com queijo americano, tomates e alface', 10, 1),
-(8, 'Anéis de Cebola', 'Anéis de cebola fritos, acompanhando 10 unidades', 13, 1),
-(9, 'Salmão', 'Salmão Grelhado', 60, 1);
+INSERT INTO `produtos` (`id`, `nome`, `descricao`, `preco`, `disponivel`, `categoria_id`) VALUES
+(1, 'Hambúrguer', 'Hambúrguer caseiro', 25, 1, 3),
+(2, 'Pizza Margherita', 'Pizza tradicional', 35, 1, 3),
+(3, 'Refrigerante', '2L', 10, 1, 1),
+(4, 'Cerveja', 'Pilsen 600ml', 8, 1, 1),
+(5, 'Batata Frita', 'Porção grande', 18, 1, 5),
+(6, 'Agua', '500ml', 2, 1, 1),
+(7, 'X-Burger', 'Pão com carne, acompanhado com queijo americano, tomates e alface', 10, 1, 3),
+(8, 'Anéis de Cebola', 'Anéis de cebola fritos, acompanhando 10 unidades', 13, 1, 5),
+(9, 'Salmão', 'Salmão Grelhado', 60, 1, 3);
 
 --
 -- Índices para tabelas despejadas
@@ -176,10 +200,18 @@ ALTER TABLE `pedidos`
   ADD KEY `mesa_id` (`mesa_id`);
 
 --
+-- Índices de tabela `categorias`
+--
+ALTER TABLE `categorias`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `nome` (`nome`);
+
+--
 -- Índices de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `categoria_id` (`categoria_id`);
 
 --
 -- AUTO_INCREMENT para tabelas despejadas
@@ -210,6 +242,12 @@ ALTER TABLE `pedidos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT de tabela `categorias`
+--
+ALTER TABLE `categorias`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
@@ -231,6 +269,12 @@ ALTER TABLE `itens_pedido`
 --
 ALTER TABLE `pedidos`
   ADD CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`mesa_id`) REFERENCES `mesas` (`id`);
+
+--
+-- Restrições para tabelas `produtos`
+--
+ALTER TABLE `produtos`
+  ADD CONSTRAINT `produtos_ibfk_1` FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

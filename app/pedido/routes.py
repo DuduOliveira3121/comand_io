@@ -7,8 +7,39 @@ from app.models.produto import Produto
 from app.models.pedido import Pedido
 from app.models.mesa import Mesa
 from app.pedido.status import STATUS_VALIDOS
+from app.categorias import CATEGORIAS_PEDIDO, normalizar_categoria_pedido
 
 pedido_bp = Blueprint("pedido", __name__, url_prefix="/pedidos")
+
+
+# =========================
+# CATEGORIAS (TIPOS) DE PEDIDO DISPONÍVEIS
+# =========================
+@pedido_bp.route("/categorias", methods=["GET"])
+def listar_categorias_pedido():
+    return jsonify(CATEGORIAS_PEDIDO)
+
+
+# =========================
+# ATUALIZAR CATEGORIA (TIPO) DO PEDIDO
+# =========================
+@pedido_bp.route("/<int:pedido_id>/categoria", methods=["POST"])
+def atualizar_categoria(pedido_id):
+
+    data = request.get_json()
+
+    pedido = Pedido.query.get(pedido_id)
+
+    if not pedido:
+        return jsonify({"erro": "Pedido não encontrado"}), 404
+
+    pedido.categoria = normalizar_categoria_pedido(data.get("categoria"))
+    db.session.commit()
+
+    return jsonify({
+        "mensagem": "Categoria atualizada",
+        "categoria": pedido.categoria
+    })
 
 
 # =========================
@@ -83,6 +114,7 @@ def buscar_pedido(id):
         "id": pedido.id,
         "total": pedido.calcular_total(),
         "observacao": pedido.observacao,
+        "categoria": pedido.categoria,
         "itens": [
             {
                 "produto": i.produto.nome,
@@ -136,6 +168,7 @@ def pedido_da_mesa(mesa_numero):
         "pedido_id": pedido.id,
         "itens": itens,
         "observacao": pedido.observacao,
+        "categoria": pedido.categoria,
         "total": pedido.calcular_total()
     })
 
@@ -232,6 +265,7 @@ def pedidos_cozinha():
         resultado.append({
             "pedido_id": pedido.id,
             "mesa": mesa.numero if mesa else "?",
+            "categoria": pedido.categoria,
             "itens": itens,
             "observacao": pedido.observacao
         })

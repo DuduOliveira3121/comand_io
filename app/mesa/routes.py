@@ -4,6 +4,7 @@ from app.email_service import enviar_email
 from app.extensions import db
 from app.models.pedido import Pedido
 from app.models.mesa import Mesa
+from app.categorias import normalizar_categoria_pedido
 
 mesa_bp = Blueprint("mesa", __name__, url_prefix="/mesas")
 
@@ -12,6 +13,7 @@ def abrir_mesa_qrcode(mesa_id):
 
     data = request.get_json()
     email = data.get("email")
+    categoria = normalizar_categoria_pedido(data.get("categoria"))
 
     mesa = Mesa.query.filter_by(numero=mesa_id).first()
 
@@ -32,7 +34,8 @@ def abrir_mesa_qrcode(mesa_id):
     novo_pedido = Pedido(
         mesa_id=mesa.id,
         status="aberto",
-        email=email
+        email=email,
+        categoria=categoria
     )
 
     db.session.add(novo_pedido)

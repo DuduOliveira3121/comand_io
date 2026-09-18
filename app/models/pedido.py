@@ -1,5 +1,6 @@
 from app.extensions import db
 from datetime import datetime
+from app.categorias import CATEGORIA_PEDIDO_PADRAO
 
 
 class Pedido(db.Model):
@@ -13,6 +14,8 @@ class Pedido(db.Model):
     email = db.Column(db.String(120))
 
     status = db.Column(db.String(20), default="aberto")
+
+    categoria = db.Column(db.String(50), default=CATEGORIA_PEDIDO_PADRAO)
 
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
 

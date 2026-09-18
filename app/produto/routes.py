@@ -5,18 +5,32 @@ from app.extensions import db
 produto_bp = Blueprint("produto", __name__, url_prefix="/produtos")
 
 
+def _categoria_id_do_payload(data):
+    """Lê categoria_id do corpo, aceitando número, string ou vazio (-> None)."""
+    valor = data.get("categoria_id")
+    if valor in (None, "", 0, "0"):
+        return None
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return None
+
+
 @produto_bp.route("/", methods=["GET"])
 @produto_bp.route("", methods=["GET"])  # Suportar ambos /produtos e /produtos/
 def listar_produtos():
 
-    produtos = Produto.query.all()
+    # Filtro opcional por categoria: /produtos/?categoria_id=3
+    categoria_id = request.args.get("categoria_id", type=int)
 
-    lista_produtos = []
+    query = Produto.query
 
-    for produto in produtos:
-        lista_produtos.append(produto.to_dict())
+    if categoria_id is not None:
+        query = query.filter_by(categoria_id=categoria_id)
 
-    return jsonify(lista_produtos)
+    produtos = query.all()
+
+    return jsonify([produto.to_dict() for produto in produtos])
 
 
 @produto_bp.route("/", methods=["POST"])
@@ -27,7 +41,8 @@ def criar_produto():
     produto = Produto(
         nome=data["nome"],
         descricao=data["descricao"],
-        preco=data["preco"]
+        preco=data["preco"],
+        categoria_id=_categoria_id_do_payload(data)
     )
 
     db.session.add(produto)
@@ -45,6 +60,7 @@ def editar_produto(id):
     produto.nome = data["nome"]
     produto.descricao = data["descricao"]
     produto.preco = data["preco"]
+    produto.categoria_id = _categoria_id_do_payload(data)
 
     db.session.commit()
 
