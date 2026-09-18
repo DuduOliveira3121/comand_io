@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração - Avaliações</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .admin-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+        
+        .card-media { background: #27ae60; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 30px; }
+        .card-media p { margin: 0; font-size: 1.2rem; opacity: 0.9; }
+        .card-media h2 { margin: 10px 0 0 0; font-size: 3rem; }
+        
+        .avaliacao-item { background: #fdfdfd; border: 1px solid #e1e8ed; padding: 15px 20px; border-radius: 8px; margin-bottom: 15px; transition: transform 0.2s; }
+        .avaliacao-item:hover { transform: translateX(5px); border-color: #bdc3c7; }
+        .avaliacao-header { display: flex; justify-content: space-between; margin-bottom: 12px; color: #7f8c8d; font-size: 0.9rem; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .estrelas { color: #f1c40f; font-size: 1.3rem; margin-bottom: 8px; }
+        .comentario-texto { color: #34495e; line-height: 1.5; margin: 0; font-size: 1.05rem; }
+        
+        .btn-voltar { display: inline-block; margin-bottom: 20px; padding: 10px 15px; background: #34495e; color: white; text-decoration: none; border-radius: 6px; }
+        .btn-voltar:hover { background: #2c3e50; }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <a href="/mesas" class="btn-voltar">← Voltar aos Pedidos</a>
+    
+    <h1>Painel de Avaliações</h1>
+    
+    <!-- Média Geral -->
+    <div class="card-media">
+        <p>Nota Média Geral</p>
+        <h2 id="media-geral">-- / 5.0</h2>
+    </div>
+
+    <!-- Lista de Comentários -->
+    <h3>Comentários Recentes</h3>
+    <div id="lista-avaliacoes">
+        <p style="text-align:center; color:#7f8c8d;">A carregar avaliações...</p>
+    </div>
+</div>
+
+<script>
+    async function carregarAvaliacoes() {
+        try {
+            // Faz o pedido GET para a nossa rota do Flask
+            const resposta = await fetch('/avaliacoes/');
+            const dados = await resposta.json();
+
+            // Atualiza a média geral no ecrã
+            document.getElementById('media-geral').innerText = dados.media_geral.toFixed(1) + ' / 5.0';
+
+            const container = document.getElementById('lista-avaliacoes');
+            container.innerHTML = '';
+
+            // Se não houver avaliações
+            if (dados.avaliacoes.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#7f8c8d;">Ainda não há avaliações registadas.</p>';
+                return;
+            }
+
+            // Cria os cartões para cada avaliação
+            dados.avaliacoes.forEach(av => {
+                // Desenha as estrelas (ex: se nota for 3, desenha ★★★☆☆)
+                const estrelas = '★'.repeat(av.nota) + '☆'.repeat(5 - av.nota);
+                const comentario = av.comentario ? av.comentario : '<i style="color:#bdc3c7;">O cliente não deixou comentário.</i>';
+                
+                const div = document.createElement('div');
+                div.className = 'avaliacao-item';
+                div.innerHTML = `
+                    <div class="avaliacao-header">
+                        <strong>Pedido #${av.pedido_id}</strong>
+                        <span>${av.criado_em}</span>
+                    </div>
+                    <div class="estrelas">${estrelas}</div>
+                    <p class="comentario-texto">${comentario}</p>
+                `;
+                container.appendChild(div);
+            });
+
+        } catch (erro) {
+            console.error("Erro ao carregar avaliações", erro);
+            document.getElementById('lista-avaliacoes').innerHTML = '<p style="color:#e74c3c;">Erro ao ligar ao servidor.</p>';
+        }
+    }
+
+    // Executa a função assim que a página termina de carregar
+    document.addEventListener('DOMContentLoaded', carregarAvaliacoes);
+</script>
+
+</body>
+</html>
