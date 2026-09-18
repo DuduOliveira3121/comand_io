@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlsplit
 from dotenv import load_dotenv
 from flask import Flask
 from .extensions import db
@@ -27,11 +28,17 @@ def create_app():
     if "mysql" in db_uri:
         try:
             import pymysql
-            parts = db_uri.split("@")[-1].split("/")
-            host_port = parts[0].split(":")
-            host = host_port[0]
-            port = int(host_port[1]) if len(host_port) > 1 else 3306
-            conn = pymysql.connect(host=host, port=port, connect_timeout=2)
+            parsed = urlsplit(db_uri)
+            # Usar as credenciais reais da URI: sem elas, o teste falha contra
+            # qualquer MySQL com autenticação exigida (ex.: o do docker-compose)
+            # e o app cai para SQLite mesmo com o MySQL disponível.
+            conn = pymysql.connect(
+                host=parsed.hostname or "127.0.0.1",
+                port=parsed.port or 3306,
+                user=parsed.username or "root",
+                password=parsed.password or "",
+                connect_timeout=2,
+            )
             conn.close()
         except Exception:
             sqlite_path = os.path.join(os.path.dirname(__file__), "..", "restaurante.db")
