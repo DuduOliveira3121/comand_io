@@ -145,6 +145,7 @@ async function _registrarEConfirmar(valor, metodo) {
         if (!resConf.ok) { alert(dadosConf.erro || "Erro ao confirmar pagamento."); return }
 
         await carregarPagamentos()
+        if (dadosConf.pedido_fechado) mostrarAvaliacao()
     } catch (err) {
         console.error(err)
         alert("Erro de comunicação com o servidor.")
@@ -157,6 +158,52 @@ function mostrarContaFechada() {
     document.getElementById("conta-fechada").style.display = "block"
     document.getElementById("total-restante").textContent = "R$ 0,00"
     document.getElementById("total-restante").style.color = "#27ae60"
+}
+
+// =========================
+// AVALIAÇÃO / FEEDBACK
+// =========================
+let notaEscolhida = 0
+
+function mostrarAvaliacao() {
+    document.getElementById("avaliacao-box").style.display = "block"
+}
+
+function selecionarNota(n) {
+    notaEscolhida = n
+    document.querySelectorAll("#estrelas-input span").forEach(el => {
+        el.classList.toggle("selecionada", Number(el.dataset.nota) <= n)
+    })
+}
+
+async function enviarAvaliacao() {
+    if (!notaEscolhida) { alert("Selecione de 1 a 5 estrelas."); return }
+
+    const btn = document.getElementById("btn-enviar-avaliacao")
+    btn.disabled = true
+
+    try {
+        const res = await fetch(`${API}/avaliacoes/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                pedido_id: pedidoId,
+                nota: notaEscolhida,
+                comentario: document.getElementById("avaliacao-comentario").value
+            })
+        })
+        const dados = await res.json()
+        if (!res.ok) { alert(dados.erro || "Erro ao enviar avaliação."); btn.disabled = false; return }
+
+        document.getElementById("estrelas-input").style.display = "none"
+        document.getElementById("avaliacao-comentario").style.display = "none"
+        btn.style.display = "none"
+        document.getElementById("avaliacao-enviada").style.display = "block"
+    } catch (err) {
+        console.error(err)
+        alert("Erro de comunicação com o servidor.")
+        btn.disabled = false
+    }
 }
 
 // Inicia
