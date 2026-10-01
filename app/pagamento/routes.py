@@ -1,5 +1,6 @@
 import io
 import base64
+from uuid import uuid4
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from app.extensions import db
@@ -14,7 +15,7 @@ NOME_BENEFICIARIO = "Comand io Restaurante"
 CIDADE_BENEFICIARIO = "SAO PAULO"
 
 
-def _gerar_qr_pix(valor: float):
+def _gerar_qr_pix(valor: float, txid: str):
     """Gera QR Code PIX EMV (BR Code) e retorna (base64_png, payload_str)."""
     import qrcode
     import qrcode.constants
@@ -33,7 +34,7 @@ def _gerar_qr_pix(valor: float):
         campo("58", "BR") +
         campo("59", NOME_BENEFICIARIO[:25]) +
         campo("60", CIDADE_BENEFICIARIO[:15]) +
-        campo("62", campo("05", "***"))
+        campo("62", campo("05", txid))
     )
     crc_data = payload + "6304"
     crc = 0xFFFF
@@ -65,25 +66,36 @@ def gerar_qr_pix():
     data = request.get_json()
     pedido_id = data.get("pedido_id")
     valor = data.get("valor")
+    txid = data.get("txid")
 
-    if not pedido_id or valor is None:
-        return jsonify({"erro": "pedido_id e valor são obrigatórios"}), 400
+    if not pedido_id or valor is None or not txid:
+        return jsonify({"erro": "pedido_id, valor e txid são obrigatórios"}), 400
 
     pedido = Pedido.query.get(pedido_id)
     if not pedido:
         return jsonify({"erro": "Pedido não encontrado"}), 404
 
     valor = float(valor)
+    pagamento = Pagamento.query.filter_by(
+        pedido_id=pedido_id,
+        txid=txid,
+        metodo="pix",
+        status="pendente",
+    ).first()
+    if not pagamento or round(float(pagamento.valor), 2) != round(valor, 2):
+        return jsonify({"erro": "Transação PIX pendente não encontrada"}), 404
+
     restante = Pagamento.valor_restante(pedido_id)
     if round(valor, 2) > round(restante, 2):
         return jsonify({"erro": "Valor maior que o saldo restante", "restante": restante}), 400
 
-    qr_b64, payload = _gerar_qr_pix(valor)
+    qr_b64, payload = _gerar_qr_pix(valor, txid)
     return jsonify({
         "qr_code_base64": qr_b64,
         "pix_copia_cola": payload,
         "chave": CHAVE_PIX_DEMO,
-        "valor": valor
+        "valor": valor,
+        "txid": txid,
     })
 
 
@@ -131,7 +143,8 @@ def registrar_pagamento():
         valor=valor,
         metodo=metodo,
         criado_por=criado_por,
-        status="pendente"
+        status="pendente",
+        txid=str(uuid4()) if metodo == "pix" else None,
     )
 
     db.session.add(novo_pagamento)
@@ -142,7 +155,8 @@ def registrar_pagamento():
         "pagamento_id": novo_pagamento.id,
         "valor": float(novo_pagamento.valor),
         "metodo": novo_pagamento.metodo,
-        "status": novo_pagamento.status
+        "status": novo_pagamento.status,
+        "txid": novo_pagamento.txid,
     }), 201
 
 
@@ -171,6 +185,7 @@ def listar_pagamentos(pedido_id):
                 "valor": float(p.valor),
                 "metodo": p.metodo,
                 "status": p.status,
+                "txid": p.txid,
                 "criado_por": p.criado_por,
                 "data_pagamento": p.data_pagamento.isoformat() if p.data_pagamento else None
             }
@@ -188,8 +203,8 @@ def confirmar_pagamento(pagamento_id):
     if not pagamento:
         return jsonify({"erro": "Pagamento não encontrado"}), 404
 
-    if pagamento.status == "pago":
-        return jsonify({"erro": "Pagamento já confirmado"}), 400
+    if pagamento.status != "pendente":
+        return jsonify({"erro": "Apenas pagamentos pendentes podem ser confirmados"}), 400
 
     pagamento.status = "pago"
     pagamento.data_pagamento = datetime.utcnow()
@@ -215,4 +230,56 @@ def confirmar_pagamento(pagamento_id):
         "valor": float(pagamento.valor),
         "pedido_fechado": pedido_fechado,
         "restante": Pagamento.valor_restante(pagamento.pedido_id)
+    })
+
+
+# =========================
+# CANCELAR PAGAMENTO PENDENTE
+# =========================
+@pagamento_bp.route("/<int:pagamento_id>", methods=["DELETE"])
+def cancelar_pagamento(pagamento_id):
+    pagamento = Pagamento.query.get(pagamento_id)
+    if not pagamento:
+        return jsonify({"erro": "Pagamento não encontrado"}), 404
+
+    if pagamento.status != "pendente":
+        return jsonify({"erro": "Apenas pagamentos pendentes podem ser cancelados"}), 400
+
+    pagamento.status = "cancelado"
+    db.session.commit()
+
+    return jsonify({
+        "mensagem": "Pagamento cancelado",
+        "pagamento_id": pagamento.id,
+        "status": pagamento.status,
+    })
+
+
+# =========================
+# COMPROVANTE ESTRUTURADO
+# =========================
+@pagamento_bp.route("/<int:pagamento_id>/comprovante")
+def obter_comprovante(pagamento_id):
+    pagamento = Pagamento.query.get(pagamento_id)
+    if not pagamento:
+        return jsonify({"erro": "Pagamento não encontrado"}), 404
+
+    if pagamento.status != "pago":
+        return jsonify({"erro": "Comprovante disponível apenas para pagamentos confirmados"}), 400
+
+    pedido = Pedido.query.get(pagamento.pedido_id)
+    mesa = Mesa.query.get(pedido.mesa_id) if pedido else None
+
+    return jsonify({
+        "comprovante": {
+            "pagamento_id": pagamento.id,
+            "pedido_id": pagamento.pedido_id,
+            "mesa": mesa.numero if mesa else None,
+            "valor": float(pagamento.valor),
+            "metodo": pagamento.metodo,
+            "status": pagamento.status,
+            "txid": pagamento.txid,
+            "criado_por": pagamento.criado_por,
+            "data_pagamento": pagamento.data_pagamento.isoformat() if pagamento.data_pagamento else None,
+        }
     })

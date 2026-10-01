@@ -14,7 +14,9 @@ class Pagamento(db.Model):
 
     metodo = db.Column(db.String(20), nullable=False)  # pix | cartao | dinheiro
 
-    status = db.Column(db.String(20), default="pendente")  # pendente | pago
+    status = db.Column(db.String(20), default="pendente")  # pendente | pago | cancelado
+
+    txid = db.Column(db.String(36), unique=True, nullable=True)
 
     criado_por = db.Column(db.String(20), default="cliente")  # cliente | caixa
 

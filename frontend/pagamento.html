@@ -28,11 +28,10 @@
   .pix-qr-area img { max-width: 200px; border: 4px solid #eee; border-radius: 8px; }
   .pix-chave { background: #f4f4f4; border-radius: 6px; padding: 10px 14px; font-size: 0.9rem; word-break: break-all; margin: 8px 0; }
   .btn-copiar { padding: 7px 16px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-bottom: 4px; }
-  .garcom-box { text-align: center; padding: 12px 0; }
-  .btn-chamar { width: 100%; padding: 14px; background: #e67e22; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; letter-spacing: 0.5px; transition: transform 0.1s; }
-  .btn-chamar:active { transform: scale(0.97); }
-  .garcom-chamado { display: none; background: #fef5e7; border: 2px solid #e67e22; border-radius: 8px; padding: 16px; text-align: center; margin-top: 12px; }
-  .garcom-chamado p { margin: 0; font-weight: 600; color: #784212; font-size: 1rem; }
+  .pagamento-acoes { display: flex; gap: 6px; align-items: center; }
+  .btn-pagamento-acao { border: 0; border-radius: 4px; padding: 5px 8px; cursor: pointer; font-size: 0.8rem; color: white; }
+  .btn-cancelar { background: #c0392b; }
+  .btn-comprovante { background: #2874a6; }
   .instrucoes { background: #fef9e7; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
   .instrucoes p { margin: 6px 0; font-size: 0.95rem; }
   .metodo-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
@@ -91,19 +90,14 @@
         <p style="margin:8px 0 4px;font-weight:600;">Código copia e cola:</p>
         <div class="pix-chave" id="pix-copia-cola" style="font-size:0.72rem;"></div>
         <button class="btn-copiar" onclick="copiarPix()">Copiar código</button>
-        <button class="btn-confirmar" id="btn-ja-paguei" onclick="confirmarPix()" style="background:#27ae60;margin-top:8px;">Já paguei ✔</button>
+        <button class="btn-confirmar" id="btn-ja-paguei" onclick="informarPagamentoPix()" style="background:#2874a6;margin-top:8px;">Já paguei</button>
+        <button class="btn-confirmar" id="btn-simular-pix" onclick="simularConfirmacaoPix()" style="background:#7d6608;margin-top:8px;">Simular confirmação PIX</button>
       </div>
     </div>
 
     <div class="painel" id="painel-cartao">
       <h3>💳 Pagar com Cartão</h3>
-      <p style="color:#555;margin:0 0 16px;">O garçom irá até sua mesa com a máquina de cartão.</p>
-      <div class="garcom-box">
-        <button class="btn-chamar" onclick="chamarGarcom()">🔔 Chamar Garçom</button>
-        <div class="garcom-chamado" id="garcom-chamado">
-          <p>✅ Garçom chamado! Aguarde, ele já está a caminho.</p>
-        </div>
-      </div>
+      <p style="color:#555;margin:0 0 16px;">Realize o pagamento no terminal de autoatendimento.</p>
       <div style="margin-top:20px;">
         <label>Valor pago no cartão (R$)</label>
         <input type="number" id="valor-cartao" min="0.01" step="0.01">
@@ -141,6 +135,6 @@
 
   </div>
 </div>
-<script src="/pagamento.js?v=5"></script>
+<script src="/pagamento.js?v=7"></script>
 </body>
 </html>

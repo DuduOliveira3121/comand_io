@@ -1,5 +1,6 @@
 ﻿const API = window.location.origin
 const pedidoId = parseInt(window.location.pathname.split("/").pop())
+let pixPagamentoId = null
 
 // =========================
 // CARREGAR RESUMO
@@ -37,10 +38,17 @@ async function carregarPagamentos() {
             document.getElementById("pagamentos-realizados").style.display = "block"
             dados.pagamentos.forEach(p => {
                 const badge = `<span class="metodo-badge metodo-${p.metodo}">${p.metodo.toUpperCase()}</span>`
-                const st = p.status === "pago"
+                const status = p.status === "pago"
                     ? `<span style="color:#27ae60">✔ Pago</span>`
-                    : `<span style="color:#e67e22">⏳ Pendente</span>`
-                lista.innerHTML += `<div class="pagamento-item"><span>${badge} R$ ${p.valor.toFixed(2)}</span><span>${st}</span></div>`
+                    : p.status === "pendente"
+                        ? `<span style="color:#e67e22">⏳ Pendente</span>`
+                        : `<span style="color:#7f8c8d">Cancelado</span>`
+                const acao = p.status === "pago"
+                    ? `<button class="btn-pagamento-acao btn-comprovante" onclick="verComprovante(${p.id})">Ver comprovante</button>`
+                    : p.status === "pendente"
+                        ? `<button class="btn-pagamento-acao btn-cancelar" onclick="cancelarPagamento(${p.id})">Cancelar</button>`
+                        : ""
+                lista.innerHTML += `<div class="pagamento-item"><span>${badge} R$ ${p.valor.toFixed(2)}</span><span class="pagamento-acoes">${status}${acao}</span></div>`
             })
         }
 
@@ -71,13 +79,29 @@ async function gerarQrPix() {
     btn.disabled = true; btn.textContent = "Gerando..."
 
     try {
+        if (pixPagamentoId) await cancelarPagamento(pixPagamentoId, false)
+
+        const resReg = await fetch(`${API}/pagamentos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pedido_id: pedidoId, valor, metodo: "pix", criado_por: "cliente" })
+        })
+        const dadosReg = await resReg.json()
+        if (!resReg.ok) { alert(dadosReg.erro || "Erro ao criar transação PIX."); return }
+        pixPagamentoId = dadosReg.pagamento_id
+
         const res = await fetch(`${API}/pagamentos/qr-pix`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pedido_id: pedidoId, valor })
+            body: JSON.stringify({ pedido_id: pedidoId, valor, txid: dadosReg.txid })
         })
         const dados = await res.json()
-        if (!res.ok) { alert(dados.erro || "Erro ao gerar QR Code."); btn.disabled = false; btn.textContent = "Gerar QR Code"; return }
+        if (!res.ok) {
+            await cancelarPagamento(pixPagamentoId, false)
+            pixPagamentoId = null
+            alert(dados.erro || "Erro ao gerar QR Code.")
+            return
+        }
 
         document.getElementById("pix-qr-img").src = `data:image/png;base64,${dados.qr_code_base64}`
         document.getElementById("pix-chave-texto").textContent = dados.chave
@@ -95,23 +119,21 @@ function copiarPix() {
     navigator.clipboard.writeText(texto).then(() => alert("Código PIX copiado!"))
 }
 
-async function confirmarPix() {
-    const valor = parseFloat(document.getElementById("valor-pix").value)
-    if (!valor || valor <= 0) { alert("Informe o valor antes de confirmar."); return }
-    await _registrarEConfirmar(valor, "pix")
+function informarPagamentoPix() {
+    if (!pixPagamentoId) { alert("Gere o QR Code antes de informar o pagamento."); return }
+    alert("Pagamento informado. Aguarde a confirmação automática da instituição financeira.")
+}
+
+async function simularConfirmacaoPix() {
+    if (!pixPagamentoId) { alert("Gere o QR Code antes de simular a confirmação."); return }
+    if (!confirm("Esta ação é apenas uma simulação e confirmará o pagamento sem consultar o banco. Deseja continuar?")) return
+    await confirmarPagamento(pixPagamentoId)
+    pixPagamentoId = null
 }
 
 // =========================
 // CARTÃO
 // =========================
-function chamarGarcom() {
-    document.getElementById("garcom-chamado").style.display = "block"
-    const btn = document.querySelector(".btn-chamar")
-    btn.textContent = "✅ Garçom chamado!"
-    btn.style.background = "#7d6608"
-    btn.disabled = true
-}
-
 async function confirmarCartao() {
     const valor = parseFloat(document.getElementById("valor-cartao").value)
     if (!valor || valor <= 0) { alert("Informe o valor pago no cartão."); return }
@@ -140,12 +162,54 @@ async function _registrarEConfirmar(valor, metodo) {
         const dadosReg = await resReg.json()
         if (!resReg.ok) { alert(dadosReg.erro || "Erro ao registrar pagamento."); return }
 
-        const resConf = await fetch(`${API}/pagamentos/confirmar/${dadosReg.pagamento_id}`, { method: "POST" })
+        await confirmarPagamento(dadosReg.pagamento_id)
+    } catch (err) {
+        console.error(err)
+        alert("Erro de comunicação com o servidor.")
+    }
+}
+
+async function confirmarPagamento(pagamentoId) {
+    try {
+        const resConf = await fetch(`${API}/pagamentos/confirmar/${pagamentoId}`, { method: "POST" })
         const dadosConf = await resConf.json()
         if (!resConf.ok) { alert(dadosConf.erro || "Erro ao confirmar pagamento."); return }
 
         await carregarPagamentos()
         if (dadosConf.pedido_fechado) mostrarAvaliacao()
+    } catch (err) {
+        console.error(err)
+        alert("Erro de comunicação com o servidor.")
+    }
+}
+
+async function cancelarPagamento(pagamentoId, atualizar = true) {
+    try {
+        const res = await fetch(`${API}/pagamentos/${pagamentoId}`, { method: "DELETE" })
+        const dados = await res.json()
+        if (!res.ok) {
+            if (atualizar) alert(dados.erro || "Erro ao cancelar pagamento.")
+            return false
+        }
+        if (pixPagamentoId === pagamentoId) pixPagamentoId = null
+        if (atualizar) await carregarPagamentos()
+        return true
+    } catch (err) {
+        console.error(err)
+        if (atualizar) alert("Erro de comunicação com o servidor.")
+        return false
+    }
+}
+
+async function verComprovante(pagamentoId) {
+    try {
+        const res = await fetch(`${API}/pagamentos/${pagamentoId}/comprovante`)
+        const dados = await res.json()
+        if (!res.ok) { alert(dados.erro || "Erro ao obter comprovante."); return }
+
+        const comprovante = dados.comprovante
+        const data = new Date(comprovante.data_pagamento).toLocaleString("pt-BR")
+        alert(`Comprovante de pagamento\n\nPedido: #${comprovante.pedido_id}\nMesa: ${comprovante.mesa || "-"}\nValor: R$ ${comprovante.valor.toFixed(2)}\nMétodo: ${comprovante.metodo.toUpperCase()}\nData: ${data}${comprovante.txid ? `\nTXID: ${comprovante.txid}` : ""}`)
     } catch (err) {
         console.error(err)
         alert("Erro de comunicação com o servidor.")

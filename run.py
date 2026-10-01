@@ -6,6 +6,24 @@ from app.models.mesa import Mesa
 from app.models.produto import Produto
 from app.models.categoria import Categoria
 from app.categorias import CATEGORIAS_PRODUTO
+from sqlalchemy import inspect, text
+
+
+def atualizar_schema_pagamentos():
+    """Aplica a alteração compatível para bancos criados antes do txid PIX."""
+    inspector = inspect(db.engine)
+    if "pagamentos" not in inspector.get_table_names():
+        return
+
+    colunas = {coluna["name"] for coluna in inspector.get_columns("pagamentos")}
+    if "txid" not in colunas:
+        db.session.execute(text("ALTER TABLE pagamentos ADD COLUMN txid VARCHAR(36)"))
+        db.session.commit()
+
+    indices = {indice["name"] for indice in inspector.get_indexes("pagamentos")}
+    if "uq_pagamentos_txid" not in indices:
+        db.session.execute(text("CREATE UNIQUE INDEX uq_pagamentos_txid ON pagamentos (txid)"))
+        db.session.commit()
 
 def seed_initial_data():
     """Popula o banco com dados iniciais se estiver vazio"""
@@ -75,6 +93,7 @@ app = create_app()
 with app.app_context():
     try:
         db.create_all()
+        atualizar_schema_pagamentos()
         seed_initial_data()
     except Exception as e:
         print(f"⚠  Não foi possível inicializar o banco: {e}")
