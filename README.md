@@ -302,6 +302,35 @@ comand_io/
 
 ---
 
+## Testes automatizados: dublês Fake e Mock
+
+Os testes do serviço de e-mail usam dois dublês para não chamar a API Resend:
+
+- **Fake (`FakeEmailApiResponse`)**: simula uma resposta HTTP com `status_code` e `text`.
+- **Mock (`unittest.mock`)**: substitui `requests.post`, fornece a resposta Fake e permite verificar se a chamada foi realizada.
+
+No PowerShell, execute na raiz do projeto:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+O teste valida os caminhos de sucesso e erro da API. A saída detalhada do comando pode ser capturada para comprovar a execução da atividade.
+
+---
+
+## Painel de relatórios
+
+Acesse **http://localhost:5000/relatorios** (também disponível pelo link no admin) e informe o período desejado. As APIs `GET /relatorios/faturamento`, `GET /relatorios/produtos-mais-vendidos`, `GET /relatorios/ticket-medio` e `GET /relatorios/ocupacao-mesas` aceitam `inicio` e `fim` no formato `AAAA-MM-DD`; sem parâmetros, usam o mês atual até hoje.
+
+- O faturamento soma pagamentos com status `pago`, agrupados pela data de confirmação.
+- Ranking de produtos e ticket médio usam os itens dos pedidos fechados no período, pela data de criação do pedido.
+- A ocupação por mesa mede o tempo entre a criação e o último pagamento confirmado, limitado ao período selecionado. Pedidos ainda ativos contam até o fim do período ou o momento atual, o que ocorrer primeiro; pedidos fechados sem pagamento registrado não têm duração calculável e não são contabilizados. A taxa geral é a média das taxas das mesas.
+
+O painel apresenta cartões de métricas, filtros de data, gráficos de faturamento diário e produtos mais vendidos, além das tabelas de ranking e ocupação.
+
+---
+
 ## 🔨 Variáveis de Ambiente
 
 Configure as seguintes variáveis conforme necessário:

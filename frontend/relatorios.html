@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Restaurante</title>
+    <link rel="stylesheet" href="/style.css?v=3">
+    <style>
+        .relatorios-container { max-width: 1200px; margin: 0 auto; padding: 20px 0 40px; }
+        .relatorios-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .relatorios-header h1 { margin: 0; }
+        .relatorios-link { color: #218838; font-weight: bold; }
+        .filtros-relatorio, .metricas-relatorio, .graficos-relatorio { display: grid; gap: 16px; }
+        .filtros-relatorio { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; align-items: end; }
+        .filtros-relatorio label { display: grid; gap: 6px; color: #555; font-size: 14px; }
+        .filtros-relatorio input { min-height: 40px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font: inherit; }
+        .filtros-relatorio button { min-height: 40px; padding: 8px 18px; border: 0; border-radius: 6px; background: #218838; color: white; font-weight: bold; cursor: pointer; }
+        .metricas-relatorio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .metrica-relatorio { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 8px #00000012; }
+        .metrica-relatorio p { margin: 0; color: #666; }
+        .metrica-relatorio strong { display: block; margin-top: 10px; color: #222; font-size: 28px; }
+        .graficos-relatorio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grafico-relatorio { min-width: 0; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 8px #00000012; }
+        .grafico-relatorio h2 { margin: 0 0 16px; font-size: 18px; }
+        .grafico-relatorio canvas { max-height: 320px; }
+        .ranking-relatorio { margin-top: 16px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 8px #00000012; }
+        .ranking-relatorio table { width: 100%; border-collapse: collapse; text-align: left; }
+        .ranking-relatorio th, .ranking-relatorio td { padding: 10px 8px; border-bottom: 1px solid #eee; }
+        .estado-relatorio { min-height: 24px; color: #555; }
+        .estado-relatorio.erro { color: #b42318; }
+        @media (max-width: 700px) {
+            .relatorios-container { width: 94%; }
+            .relatorios-header { align-items: flex-start; flex-direction: column; }
+            .filtros-relatorio, .metricas-relatorio, .graficos-relatorio { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main class="relatorios-container">
+        <header class="relatorios-header">
+            <h1>Painel de relatórios</h1>
+            <a class="relatorios-link" href="/admin">Voltar ao admin</a>
+        </header>
+
+        <section class="card filtros-relatorio" aria-label="Filtros do relatório">
+            <label for="inicio">Data inicial
+                <input id="inicio" type="date">
+            </label>
+            <label for="fim">Data final
+                <input id="fim" type="date">
+            </label>
+            <button id="aplicar-filtros" type="button">Aplicar período</button>
+        </section>
+
+        <p id="estado-relatorio" class="estado-relatorio" role="status" aria-live="polite"></p>
+
+        <section class="metricas-relatorio" aria-label="Métricas do restaurante">
+            <article class="metrica-relatorio">
+                <p>Faturamento no período</p>
+                <strong id="total-faturamento">--</strong>
+            </article>
+            <article class="metrica-relatorio">
+                <p>Ticket médio por pedido fechado</p>
+                <strong id="ticket-medio">--</strong>
+            </article>
+            <article class="metrica-relatorio">
+                <p>Ocupação média das mesas</p>
+                <strong id="taxa-ocupacao">--</strong>
+            </article>
+        </section>
+
+        <section class="graficos-relatorio" aria-label="Gráficos do período">
+            <article class="grafico-relatorio">
+                <h2>Faturamento por dia</h2>
+                <canvas id="grafico-faturamento" aria-label="Gráfico de faturamento diário"></canvas>
+            </article>
+            <article class="grafico-relatorio">
+                <h2>Produtos mais vendidos</h2>
+                <canvas id="grafico-produtos" aria-label="Gráfico de produtos mais vendidos"></canvas>
+            </article>
+        </section>
+
+        <section class="ranking-relatorio">
+            <h2>Ocupação por mesa</h2>
+            <div id="lista-ocupacao"></div>
+        </section>
+        <section class="ranking-relatorio">
+            <h2>Ranking de produtos</h2>
+            <div id="lista-produtos"></div>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/relatorios.js"></script>
+</body>
+</html>
