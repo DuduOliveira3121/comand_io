@@ -1,7 +1,7 @@
 from app import create_app
 from app.extensions import db
 from app.models import mesa, pedido, produto, item_pedido, categoria
-from app.models import pagamento, avaliacao
+from app.models import pagamento, avaliacao, beneficio, cliente, movimentacao_pontos
 from app.models.mesa import Mesa
 from app.models.produto import Produto
 from app.models.categoria import Categoria
@@ -23,6 +23,20 @@ def atualizar_schema_pagamentos():
     indices = {indice["name"] for indice in inspector.get_indexes("pagamentos")}
     if "uq_pagamentos_txid" not in indices:
         db.session.execute(text("CREATE UNIQUE INDEX uq_pagamentos_txid ON pagamentos (txid)"))
+        db.session.commit()
+
+def atualizar_schema_fidelidade():
+    """Adiciona os campos de fidelidade aos pedidos já existentes."""
+    inspector = inspect(db.engine)
+    if "pedidos" not in inspector.get_table_names():
+        return
+
+    colunas = {coluna["name"] for coluna in inspector.get_columns("pedidos")}
+    if "cliente_id" not in colunas:
+        db.session.execute(text("ALTER TABLE pedidos ADD COLUMN cliente_id INTEGER"))
+        db.session.commit()
+    if "desconto_fidelidade" not in colunas:
+        db.session.execute(text("ALTER TABLE pedidos ADD COLUMN desconto_fidelidade NUMERIC(10, 2) NOT NULL DEFAULT 0"))
         db.session.commit()
 
 def seed_initial_data():
@@ -94,6 +108,7 @@ with app.app_context():
     try:
         db.create_all()
         atualizar_schema_pagamentos()
+        atualizar_schema_fidelidade()
         seed_initial_data()
     except Exception as e:
         print(f"⚠  Não foi possível inicializar o banco: {e}")

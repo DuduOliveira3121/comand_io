@@ -25,6 +25,7 @@ async function carregarPagamentos() {
         document.getElementById("total-pedido").textContent = `R$ ${dados.total.toFixed(2)}`
         document.getElementById("total-pago").textContent = `R$ ${dados.pago.toFixed(2)}`
         document.getElementById("total-restante").textContent = `R$ ${dados.restante.toFixed(2)}`
+        await carregarFidelidade()
 
         const restante = dados.restante
         ;["valor-pix", "valor-cartao", "valor-dinheiro"].forEach(id => {
@@ -222,6 +223,86 @@ function mostrarContaFechada() {
     document.getElementById("conta-fechada").style.display = "block"
     document.getElementById("total-restante").textContent = "R$ 0,00"
     document.getElementById("total-restante").style.color = "#27ae60"
+}
+
+async function carregarFidelidade() {
+    const res = await fetch(`${API}/fidelidade/pedido/${pedidoId}`)
+    if (!res.ok) return
+
+    const dados = await res.json()
+    const status = document.getElementById("fidelidade-status")
+    const formulario = document.getElementById("fidelidade-form")
+    const beneficios = document.getElementById("beneficios-fidelidade")
+    if (!dados.cliente) {
+        status.textContent = "Identifique-se para acumular e resgatar pontos."
+        formulario.style.display = "block"
+        beneficios.style.display = "none"
+        return
+    }
+
+    formulario.style.display = "none"
+    status.textContent = `${dados.cliente.nome}: ${dados.cliente.pontos} ponto(s).`
+    if (dados.desconto_fidelidade > 0) {
+        beneficios.style.display = "block"
+        beneficios.innerHTML = `<p>Benefício aplicado: desconto de R$ ${dados.desconto_fidelidade.toFixed(2)}.</p>`
+        return
+    }
+
+    beneficios.style.display = "block"
+    beneficios.innerHTML = dados.beneficios.length
+        ? `<strong>Benefícios disponíveis</strong>${dados.beneficios.map(beneficio => `
+            <div class="beneficio-fidelidade">
+                <span>${beneficio.nome}<br><small>${beneficio.pontos_necessarios} ponto(s) · R$ ${beneficio.valor_desconto.toFixed(2)} de desconto</small></span>
+                <button type="button" ${beneficio.resgatavel ? "" : "disabled"} onclick="resgatarBeneficio(${beneficio.id})">Resgatar</button>
+            </div>`).join("")}`
+        : "<p>Nenhum benefício ativo no momento.</p>"
+}
+
+async function identificarCliente() {
+    const nome = document.getElementById("cliente-nome").value.trim()
+    const email = document.getElementById("cliente-email").value.trim()
+    const telefone = document.getElementById("cliente-telefone").value.trim()
+    if (!nome || !email) {
+        alert("Informe nome e e-mail para participar.")
+        return
+    }
+
+    try {
+        const res = await fetch(`${API}/fidelidade/pedido/${pedidoId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, email, telefone }),
+        })
+        const dados = await res.json()
+        if (!res.ok) {
+            alert(dados.erro || "Não foi possível identificar o cliente.")
+            return
+        }
+        await carregarFidelidade()
+    } catch (erro) {
+        console.error(erro)
+        alert("Erro de comunicação com o servidor.")
+    }
+}
+
+async function resgatarBeneficio(beneficioId) {
+    try {
+        const res = await fetch(`${API}/fidelidade/resgates`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pedido_id: pedidoId, beneficio_id: beneficioId }),
+        })
+        const dados = await res.json()
+        if (!res.ok) {
+            alert(dados.erro || "Não foi possível resgatar o benefício.")
+            return
+        }
+        alert(`Benefício aplicado. Novo saldo: ${dados.saldo_pontos} ponto(s).`)
+        await carregarPagamentos()
+    } catch (erro) {
+        console.error(erro)
+        alert("Erro de comunicação com o servidor.")
+    }
 }
 
 // =========================

@@ -99,9 +99,59 @@ CREATE TABLE `pedidos` (
   `mesa_id` int(11) NOT NULL,
   `status` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
+  `cliente_id` int(11) DEFAULT NULL,
+  `desconto_fidelidade` decimal(10,2) NOT NULL DEFAULT 0,
   `data_criacao` datetime DEFAULT NULL,
   `observacao` varchar(255) DEFAULT NULL,
   `categoria` varchar(50) DEFAULT 'Mesa'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `clientes`
+--
+
+CREATE TABLE `clientes` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `email` varchar(120) NOT NULL,
+  `telefone` varchar(30) DEFAULT NULL,
+  `pontos` int(11) NOT NULL DEFAULT 0,
+  `criado_em` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `beneficios`
+--
+
+CREATE TABLE `beneficios` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `descricao` varchar(255) DEFAULT NULL,
+  `pontos_necessarios` int(11) NOT NULL,
+  `valor_desconto` decimal(10,2) NOT NULL,
+  `ativo` tinyint(1) NOT NULL DEFAULT 1,
+  `criado_em` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `movimentacoes_pontos`
+--
+
+CREATE TABLE `movimentacoes_pontos` (
+  `id` int(11) NOT NULL,
+  `cliente_id` int(11) NOT NULL,
+  `pedido_id` int(11) DEFAULT NULL,
+  `beneficio_id` int(11) DEFAULT NULL,
+  `tipo` varchar(20) NOT NULL,
+  `pontos` int(11) NOT NULL,
+  `descricao` varchar(255) NOT NULL,
+  `criado_em` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -197,7 +247,30 @@ ALTER TABLE `mesas`
 --
 ALTER TABLE `pedidos`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `mesa_id` (`mesa_id`);
+  ADD KEY `mesa_id` (`mesa_id`),
+  ADD KEY `cliente_id` (`cliente_id`);
+
+--
+-- Índices de tabela `clientes`
+--
+ALTER TABLE `clientes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Índices de tabela `beneficios`
+--
+ALTER TABLE `beneficios`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices de tabela `movimentacoes_pontos`
+--
+ALTER TABLE `movimentacoes_pontos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `cliente_id` (`cliente_id`),
+  ADD KEY `pedido_id` (`pedido_id`),
+  ADD KEY `beneficio_id` (`beneficio_id`);
 
 --
 -- Índices de tabela `categorias`
@@ -242,6 +315,18 @@ ALTER TABLE `pedidos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT para tabelas despejadas
+--
+ALTER TABLE `clientes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `beneficios`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `movimentacoes_pontos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `categorias`
 --
 ALTER TABLE `categorias`
@@ -269,6 +354,14 @@ ALTER TABLE `itens_pedido`
 --
 ALTER TABLE `pedidos`
   ADD CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`mesa_id`) REFERENCES `mesas` (`id`);
+
+ALTER TABLE `pedidos`
+  ADD CONSTRAINT `pedidos_ibfk_2` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`);
+
+ALTER TABLE `movimentacoes_pontos`
+  ADD CONSTRAINT `movimentacoes_pontos_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
+  ADD CONSTRAINT `movimentacoes_pontos_ibfk_2` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`),
+  ADD CONSTRAINT `movimentacoes_pontos_ibfk_3` FOREIGN KEY (`beneficio_id`) REFERENCES `beneficios` (`id`);
 
 --
 -- Restrições para tabelas `produtos`

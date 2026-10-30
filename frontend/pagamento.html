@@ -47,6 +47,10 @@
   .estrelas-input span.selecionada { color: #f1c40f; }
   .avaliacao-box textarea { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; margin-bottom: 12px; resize: vertical; min-height: 60px; }
   .avaliacao-enviada { display: none; color: #27ae60; font-weight: 600; }
+  .fidelidade-card { background: #f5eef8; border: 1px solid #d2b4de; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .fidelidade-card h3 { margin: 0 0 10px; color: #6c3483; }
+  .fidelidade-card button { padding: 8px 12px; border: 0; border-radius: 6px; background: #7d3c98; color: white; cursor: pointer; font-weight: 600; }
+  .beneficio-fidelidade { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #dfc9e8; }
 </style>
 </head>
 <body>
@@ -67,6 +71,21 @@
       <h3>Pagamentos Realizados</h3>
       <div id="lista-pagamentos"></div>
     </div>
+
+    <section class="fidelidade-card" id="fidelidade-card">
+      <h3>⭐ Programa de fidelidade</h3>
+      <p id="fidelidade-status">Identifique-se para acumular e resgatar pontos.</p>
+      <div id="fidelidade-form">
+        <label for="cliente-nome">Nome</label>
+        <input id="cliente-nome" type="text" autocomplete="name">
+        <label for="cliente-email">E-mail</label>
+        <input id="cliente-email" type="email" autocomplete="email">
+        <label for="cliente-telefone">Telefone (opcional)</label>
+        <input id="cliente-telefone" type="tel" autocomplete="tel">
+        <button type="button" onclick="identificarCliente()">Participar do programa</button>
+      </div>
+      <div id="beneficios-fidelidade" style="display:none"></div>
+    </section>
 
     <div class="metodo-tabs" id="metodo-tabs">
       <button class="metodo-tab ativo" onclick="selecionarAba('pix', this)">PIX</button>

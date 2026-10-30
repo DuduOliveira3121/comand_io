@@ -331,6 +331,17 @@ O painel apresenta cartões de métricas, filtros de data, gráficos de faturame
 
 ---
 
+## Programa de fidelidade
+
+Acesse **http://localhost:5000/fidelidade** pelo link no painel administrativo para cadastrar e ativar benefícios de desconto. Na tela de pagamento, o cliente informa nome e e-mail para participar do programa.
+
+- Cada pedido totalmente pago gera **1 ponto por real** sobre o total após eventual desconto.
+- Os benefícios são descontos fixos, resgatáveis antes do primeiro pagamento do pedido.
+- Todo crédito e resgate fica registrado no histórico do cliente.
+- Quando `RESEND_API_KEY` estiver configurada, o cliente recebe e-mails de crédito e resgate de pontos.
+
+---
+
 ## 🔨 Variáveis de Ambiente
 
 Configure as seguintes variáveis conforme necessário:

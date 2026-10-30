@@ -80,6 +80,60 @@ def enviar_email(destinatario, numero_mesa=None, status=None, pedido_id=None):
             logger.error(f"❌ Erro ao enviar email: {response.status_code} - {response.text}")
             return False
 
-    except Exception as e:
+    except requests.RequestException as e:
         logger.error(f"❌ Erro ao enviar email para {destinatario}: {e}")
         return False
+
+
+def enviar_email_fidelidade(destinatario, nome_cliente, tipo, pontos, saldo, beneficio=None):
+    """Envia ao cliente a confirmação de crédito ou resgate de pontos."""
+    api_key = os.getenv("RESEND_API_KEY", "")
+    if not api_key:
+        logger.error("❌ RESEND_API_KEY não configurada no arquivo .env")
+        return False
+
+    if tipo == "credito":
+        assunto = "Você ganhou pontos no comand.io"
+        texto = (
+            f"Olá, {nome_cliente}! Você ganhou {pontos} ponto(s) pela sua compra. "
+            f"Seu saldo atual é de {saldo} ponto(s)."
+        )
+    elif tipo == "resgate":
+        assunto = "Benefício resgatado no comand.io"
+        texto = (
+            f"Olá, {nome_cliente}! Você usou {pontos} ponto(s) para resgatar "
+            f"o benefício {beneficio}. Seu saldo atual é de {saldo} ponto(s)."
+        )
+    else:
+        logger.error("❌ Tipo de notificação de fidelidade inválido: %s", tipo)
+        return False
+
+    try:
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "from": "Command.io <onboarding@resend.dev>",
+                "to": destinatario,
+                "subject": assunto,
+                "html": f"<p>{texto}</p>",
+            },
+            timeout=10,
+        )
+    except requests.RequestException as error:
+        logger.error("❌ Erro ao enviar email de fidelidade para %s: %s", destinatario, error)
+        return False
+
+    if response.status_code == 200:
+        logger.info("✅ Email de fidelidade enviado para %s", destinatario)
+        return True
+
+    logger.error(
+        "❌ Erro ao enviar email de fidelidade: %s - %s",
+        response.status_code,
+        response.text,
+    )
+    return False

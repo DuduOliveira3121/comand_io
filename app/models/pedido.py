@@ -13,6 +13,8 @@ class Pedido(db.Model):
 
     email = db.Column(db.String(120))
 
+    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
+
     status = db.Column(db.String(20), default="aberto")
 
     categoria = db.Column(db.String(50), default=CATEGORIA_PEDIDO_PADRAO)
@@ -21,10 +23,15 @@ class Pedido(db.Model):
 
     observacao = db.Column(db.String(255), nullable=True)
 
+    desconto_fidelidade = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+
     itens = db.relationship("ItemPedido", backref="pedido", lazy=True)
+    cliente = db.relationship("Cliente")
 
     def calcular_total(self):
-        return sum(item.quantidade * item.preco_unitario for item in self.itens)
+        subtotal = sum(item.quantidade * item.preco_unitario for item in self.itens)
+        desconto = float(self.desconto_fidelidade or 0)
+        return max(0, subtotal - desconto)
 
 
     def quantidade_itens(self):

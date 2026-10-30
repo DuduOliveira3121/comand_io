@@ -10,6 +10,7 @@ from app.categoria.routes import categoria_bp
 from app.frontend.routes import frontend_bp
 from app.pagamento.routes import pagamento_bp
 from app.avaliacao.routes import bp_avaliacoes
+from app.fidelidade.routes import fidelidade_bp
 from app.relatorios.routes import relatorios_bp
 from flask_cors import CORS
 
@@ -63,6 +64,7 @@ def create_app():
     app.register_blueprint(frontend_bp)
     app.register_blueprint(pagamento_bp)
     app.register_blueprint(bp_avaliacoes)
+    app.register_blueprint(fidelidade_bp)
     app.register_blueprint(relatorios_bp)
 
     print(app.url_map)

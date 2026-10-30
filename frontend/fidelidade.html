@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa de Fidelidade</title>
+<link rel="stylesheet" href="/style.css?v=3">
+<style>
+  .fidelidade-admin { max-width: 1000px; margin: 0 auto; padding: 20px 0 40px; }
+  .fidelidade-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .fidelidade-lista { display: grid; gap: 10px; }
+  .fidelidade-item { display: flex; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid #e1e1e1; border-radius: 8px; }
+  .fidelidade-item p { margin: 4px 0 0; color: #555; }
+  .fidelidade-item button { height: fit-content; }
+  @media (max-width: 700px) { .fidelidade-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="fidelidade-admin">
+  <header>
+    <h1>Programa de fidelidade</h1>
+    <a href="/admin">Voltar ao admin</a>
+  </header>
+  <div class="fidelidade-grid">
+    <section class="card">
+      <h2>Criar benefício</h2>
+      <div class="form-grid">
+        <input id="beneficio-nome" placeholder="Nome do benefício">
+        <input id="beneficio-descricao" placeholder="Descrição">
+        <input id="beneficio-pontos" type="number" min="1" placeholder="Pontos necessários">
+        <input id="beneficio-desconto" type="number" min="0.01" step="0.01" placeholder="Desconto em R$">
+      </div>
+      <button class="btn-primary" type="button" onclick="criarBeneficio()">Salvar benefício</button>
+    </section>
+    <section class="card">
+      <h2>Benefícios cadastrados</h2>
+      <div id="lista-beneficios" class="fidelidade-lista"></div>
+    </section>
+  </div>
+  <section class="card">
+    <h2>Clientes e saldos</h2>
+    <div id="lista-clientes" class="fidelidade-lista"></div>
+  </section>
+</main>
+<script src="/fidelidade.js"></script>
+</body>
+</html>

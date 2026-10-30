@@ -2,11 +2,14 @@ import io
 import base64
 from uuid import uuid4
 from datetime import datetime
+from threading import Thread
 from flask import Blueprint, request, jsonify
 from app.extensions import db
 from app.models.pagamento import Pagamento
 from app.models.pedido import Pedido
 from app.models.mesa import Mesa
+from app.models.movimentacao_pontos import MovimentacaoPontos
+from app.email_service import enviar_email_fidelidade
 
 pagamento_bp = Blueprint("pagamento", __name__, url_prefix="/pagamentos")
 
@@ -213,6 +216,8 @@ def confirmar_pagamento(pagamento_id):
     # Verifica se o pedido está totalmente pago e fecha automaticamente
     restante = Pagamento.valor_restante(pagamento.pedido_id)
     pedido_fechado = False
+    pontos_creditados = 0
+    saldo_pontos = None
 
     if restante <= 0:
         pedido = Pedido.query.get(pagamento.pedido_id)
@@ -221,15 +226,48 @@ def confirmar_pagamento(pagamento_id):
             mesa = Mesa.query.get(pedido.mesa_id)
             if mesa:
                 mesa.status = "livre"
-            db.session.commit()
             pedido_fechado = True
+
+        if pedido and pedido.cliente:
+            credito_existente = MovimentacaoPontos.query.filter_by(
+                pedido_id=pedido.id,
+                tipo="credito",
+            ).first()
+            if not credito_existente:
+                pontos_creditados = int(pedido.calcular_total())
+                if pontos_creditados > 0:
+                    pedido.cliente.pontos += pontos_creditados
+                    saldo_pontos = pedido.cliente.pontos
+                    db.session.add(MovimentacaoPontos(
+                        cliente_id=pedido.cliente.id,
+                        pedido_id=pedido.id,
+                        tipo="credito",
+                        pontos=pontos_creditados,
+                        descricao=f"Pontos gerados pelo pedido #{pedido.id}",
+                    ))
+
+        db.session.commit()
+
+        if pontos_creditados:
+            Thread(
+                target=enviar_email_fidelidade,
+                kwargs={
+                    "destinatario": pedido.cliente.email,
+                    "nome_cliente": pedido.cliente.nome,
+                    "tipo": "credito",
+                    "pontos": pontos_creditados,
+                    "saldo": saldo_pontos,
+                },
+            ).start()
 
     return jsonify({
         "mensagem": "Pagamento confirmado",
         "pagamento_id": pagamento.id,
         "valor": float(pagamento.valor),
         "pedido_fechado": pedido_fechado,
-        "restante": Pagamento.valor_restante(pagamento.pedido_id)
+        "restante": Pagamento.valor_restante(pagamento.pedido_id),
+        "pontos_creditados": pontos_creditados,
+        "saldo_pontos": saldo_pontos,
     })
 
 

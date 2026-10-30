@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch
 
-from app.email_service import enviar_email
+from app.email_service import enviar_email, enviar_email_fidelidade
 
 
 class FakeEmailApiResponse:
@@ -56,6 +56,27 @@ class EmailServiceTest(unittest.TestCase):
         self.assertFalse(resultado)
         mock_post.assert_called_once()
         self.assertIn("503", logs.output[0])
+
+    def test_envia_email_de_credito_de_pontos(self):
+        fake_response = FakeEmailApiResponse(status_code=200)
+
+        with (
+            patch.dict(os.environ, {"RESEND_API_KEY": "chave-de-teste"}),
+            patch("app.email_service.requests.post") as mock_post,
+        ):
+            mock_post.return_value = fake_response
+            resultado = enviar_email_fidelidade(
+                destinatario="cliente@example.com",
+                nome_cliente="Cliente",
+                tipo="credito",
+                pontos=25,
+                saldo=40,
+            )
+
+        self.assertTrue(resultado)
+        chamada = mock_post.call_args
+        self.assertEqual(chamada.kwargs["json"]["subject"], "Você ganhou pontos no comand.io")
+        self.assertIn("25 ponto(s)", chamada.kwargs["json"]["html"])
 
 
 if __name__ == "__main__":
