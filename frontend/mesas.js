@@ -33,6 +33,11 @@ async function carregarMesas(){
                 email = `<br><small class="mesa-email">📧 ${emailTruncado}</small>`
             }
 
+            let reserva = ""
+            if(m.proxima_reserva){
+                reserva = `<br><small>🕒 Reserva ${m.proxima_reserva.horario}</small>`
+            }
+
             div.innerHTML += `
                 <div class="mesa-card ${classe}"
                 onclick="abrirMesa(${m.numero})"
@@ -42,6 +47,7 @@ async function carregarMesas(){
                     ${m.status}
                     ${total}
                     ${email}
+                    ${reserva}
 
                 </div>
             `

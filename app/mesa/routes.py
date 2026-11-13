@@ -5,6 +5,8 @@ from app.extensions import db
 from app.models.pedido import Pedido
 from app.models.mesa import Mesa
 from app.categorias import normalizar_categoria_pedido
+from app.models.reserva import Reserva, STATUS_CONFIRMADA
+from datetime import datetime
 
 mesa_bp = Blueprint("mesa", __name__, url_prefix="/mesas")
 
@@ -58,6 +60,13 @@ def status_mesas():
 
     mesas = Mesa.query.all()
 
+    # Próximas reservas confirmadas de hoje, para a recepção visualizar no painel
+    agora = datetime.now()
+    reservas_hoje = Reserva.query.filter(
+        Reserva.data == agora.date(),
+        Reserva.status == STATUS_CONFIRMADA,
+    ).order_by(Reserva.horario).all()
+
     resultado = []
 
     for mesa in mesas:
@@ -78,7 +87,11 @@ def status_mesas():
             "numero": mesa.numero,
             "status": status,
             "total": total,
-            "email": pedido.email if pedido else None
+            "email": pedido.email if pedido else None,
+            "proxima_reserva": next((
+                {"horario": r.horario.strftime("%H:%M"), "cliente": r.cliente_nome}
+                for r in reservas_hoje if r.mesa_id == mesa.id
+            ), None)
         })
 
     return jsonify(resultado)

@@ -2,6 +2,8 @@ from app import create_app
 from app.extensions import db
 from app.models import mesa, pedido, produto, item_pedido, categoria
 from app.models import pagamento, avaliacao, beneficio, cliente, movimentacao_pontos
+from app.models import reserva, lista_espera
+from app.reservas.dados_exemplo import criar_dados_exemplo_reservas
 from app.models.mesa import Mesa
 from app.models.produto import Produto
 from app.models.categoria import Categoria
@@ -97,6 +99,10 @@ def seed_initial_data():
 
             db.session.commit()
             print("✓ Produtos criados com sucesso!")
+
+        # Reservas e lista de espera de exemplo (só se ainda não houver nenhuma)
+        if criar_dados_exemplo_reservas():
+            print("✓ Reservas e lista de espera de exemplo criadas!")
     
     except Exception as e:
         print(f"⚠ Erro ao popular dados iniciais: {e}")

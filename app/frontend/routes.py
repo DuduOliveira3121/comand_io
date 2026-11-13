@@ -39,6 +39,10 @@ def relatorios():
 def fidelidade():
     return send_from_directory(FRONTEND_DIR, "fidelidade.html")
 
+@frontend_bp.route("/recepcao")
+def recepcao():
+    return send_from_directory(FRONTEND_DIR, "recepcao.html")
+
 @frontend_bp.route("/pagamento/<int:pedido_id>")
 def pagamento(pedido_id):
     return send_from_directory(FRONTEND_DIR, "pagamento.html")

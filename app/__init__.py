@@ -12,6 +12,8 @@ from app.pagamento.routes import pagamento_bp
 from app.avaliacao.routes import bp_avaliacoes
 from app.fidelidade.routes import fidelidade_bp
 from app.relatorios.routes import relatorios_bp
+from app.reservas.routes import reservas_bp, lista_espera_bp
+from app.reservas.dados_exemplo import registrar_comando as registrar_dados_exemplo_reservas
 from flask_cors import CORS
 
 def create_app():
@@ -66,6 +68,10 @@ def create_app():
     app.register_blueprint(bp_avaliacoes)
     app.register_blueprint(fidelidade_bp)
     app.register_blueprint(relatorios_bp)
+    app.register_blueprint(reservas_bp)
+    app.register_blueprint(lista_espera_bp)
+
+    registrar_dados_exemplo_reservas(app)
 
     print(app.url_map)
 
