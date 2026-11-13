@@ -11,6 +11,10 @@ function esc(valor) {
     }[c]))
 }
 
+function moeda(valor) {
+    return `R$ ${Number(valor).toFixed(2)}`
+}
+
 function hojeISO() {
     const d = new Date()
     const pad = n => String(n).padStart(2, "0")
@@ -73,7 +77,12 @@ async function carregarMesasAgora() {
     const agenda = await api(`/reservas/agenda?data=${hojeISO()}`)
     document.getElementById("mesas-agora").innerHTML = agenda.mesas.map(m => `
         <span class="chip ${m.ocupada_agora ? "ocupada" : "livre"}">
-          Mesa ${m.numero} (${m.capacidade} lug.) — ${m.ocupada_agora ? `ocupada · pedido #${m.pedido_id}` : "livre"}
+          Mesa ${m.numero} (${m.capacidade} lug.) — ${m.ocupada_agora
+              ? `ocupada · pedido #${m.pedido_id} · ${moeda(m.total_aberto)}`
+              : "livre"}
+          ${m.ocupada_agora
+              ? `<button class="btn-chip" onclick="liberarMesa(${m.numero}, ${m.pedido_id}, ${m.total_aberto})">Liberar</button>`
+              : ""}
         </span>`).join("")
 
     const filtroMesa = document.getElementById("f-mesa")
@@ -109,6 +118,17 @@ async function carregarMesasDisponiveis(manterSelecao) {
     } catch (e) {
         if (e.dados !== undefined) mostrarMensagem(e.message, "erro")
     }
+}
+
+async function liberarMesa(numero, pedidoId, total) {
+    const aviso = total > 0
+        ? `A mesa ${numero} tem o pedido #${pedidoId} com ${moeda(total)} em aberto.\n\nLiberar a mesa sem registrar o pagamento?`
+        : `Liberar a mesa ${numero}? O pedido #${pedidoId} está sem itens e será encerrado.`
+    if (!confirm(aviso)) return
+    await executar(async () => {
+        await api(`/pedidos/fechar/${pedidoId}`, { method: "POST" })
+        return { mensagem: `Mesa ${numero} liberada e pedido #${pedidoId} encerrado.` }
+    })
 }
 
 // ---------- reservas: cadastro / edição ----------

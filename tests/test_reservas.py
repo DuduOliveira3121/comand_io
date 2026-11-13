@@ -313,6 +313,25 @@ class CheckInTest(ReservasBaseTest):
         self.assertEqual(ativas, [])
 
 
+class LiberarMesaTest(ReservasBaseTest):
+    def test_mesa_com_pedido_sem_itens_pode_ser_liberada(self):
+        """Mesa aberta pela fila e sem consumo não pode ficar presa: o total é 0
+        e a tela de pagamento não fecharia o pedido."""
+        pedido_id = self.ocupar(3)
+        mesa = next(m for m in self.client.get(f"/reservas/agenda?data={HOJE}").get_json()["mesas"]
+                    if m["numero"] == 3)
+        self.assertTrue(mesa["ocupada_agora"])
+        self.assertEqual(mesa["total_aberto"], 0)
+        self.assertEqual(mesa["pedido_id"], pedido_id)
+
+        self.assertEqual(self.client.post(f"/pedidos/fechar/{pedido_id}").status_code, 200)
+
+        mesa = next(m for m in self.client.get(f"/reservas/agenda?data={HOJE}").get_json()["mesas"]
+                    if m["numero"] == 3)
+        self.assertFalse(mesa["ocupada_agora"])
+        self.assertIn(3, [m["numero"] for m in self.client.get("/reservas/mesas-livres-agora?pessoas=4").get_json()])
+
+
 class ListaEsperaTest(ReservasBaseTest):
     def entrar(self, nome, pessoas):
         return self.client.post("/lista-espera", json={"nome": nome, "contato": "(11) 9", "quantidade_pessoas": pessoas})

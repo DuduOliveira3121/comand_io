@@ -79,6 +79,7 @@ def _mesa_dict(mesa):
         "capacidade": mesa.capacidade,
         "ocupada_agora": pedido is not None,
         "pedido_id": pedido.id if pedido else None,
+        "total_aberto": pedido.calcular_total() if pedido else 0,
     }
 
 
