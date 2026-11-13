@@ -342,6 +342,56 @@ Acesse **http://localhost:5000/fidelidade** pelo link no painel administrativo p
 
 ---
 
+## Reservas de mesas e lista de espera
+
+Tela da recepção: **http://localhost:5000/recepcao** (também tem link no `/admin` e no `/mesas`).
+
+**Reserva**: cliente, contato, data, horário, quantidade de pessoas, mesa, observação e status.
+Os status são `confirmada`, `aguardando` (o cliente chegou e está na lista de espera), `em_atendimento`, `cancelada` e `nao_compareceu`.
+
+Regras:
+- A mesa precisa comportar a quantidade de pessoas.
+- Cada reserva ocupa a mesa por **2 horas**, e duas reservas da mesma mesa com menos de 2h de diferença entram em conflito.
+- Não dá para reservar no passado. O check-in só vale no dia da reserva.
+- **Check-in**: abre o pedido da mesa (a comanda funciona normalmente em `/mesa/N`) e marca a mesa como ocupada. Se a mesa estiver ocupada, o sistema sugere outra livre. Se não houver nenhuma, o cliente vai para a lista de espera.
+- **Lista de espera**: guarda nome, contato, pessoas e horário de entrada, e mostra a ordem de chegada. Uma mesa liberada pode ser atribuída a qualquer cliente da fila (a tela já sugere as mesas que comportam o grupo).
+- A disponibilidade é calculada na hora, então ela se atualiza sozinha depois de cancelamento, check-in, "não compareceu" e encerramento do pedido (fechar ou pagar).
+
+Principais rotas da API:
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/reservas?data=&mesa=&status=&busca=` | Consulta com filtros (status aceita vários, separados por vírgula) |
+| POST | `/reservas` | Nova reserva |
+| PUT | `/reservas/<id>` | Editar |
+| POST | `/reservas/<id>/cancelar` | Cancelar |
+| POST | `/reservas/<id>/check-in` | Check-in (body opcional: `{"mesa_numero": N}`) |
+| POST | `/reservas/<id>/nao-compareceu` | Marcar não comparecimento |
+| POST | `/reservas/<id>/lista-espera` | Cliente com reserva vai para a fila |
+| GET | `/reservas/agenda?data=` | Agenda diária por mesa |
+| GET | `/reservas/mesas-disponiveis?data=&horario=&pessoas=` | Mesas disponíveis |
+| GET/POST | `/lista-espera` | Fila em ordem / entrar na fila |
+| POST | `/lista-espera/<id>/atribuir` | Atribuir mesa (`{"mesa_numero": N}`) |
+| POST | `/lista-espera/<id>/desistir` | Remover da fila |
+
+**Dados de exemplo**: são criados automaticamente na primeira execução (reservas de hoje e de amanhã, além de 3 clientes na fila). Para recriá-los com a data de hoje (por exemplo, no dia da prova):
+
+```bash
+flask --app run.py dados-exemplo-reservas --recriar
+```
+
+Roteiro de demonstração:
+1. Cadastrar uma reserva na mesa 3 às 20:00. O sistema avisa do conflito com a reserva da Carla às 19:00.
+2. Cadastrar a mesma reserva para 6 pessoas na mesa 1. O sistema avisa que a capacidade foi excedida.
+3. Clicar em "Ver mesas disponíveis" e salvar a reserva.
+4. Abrir a mesa 1 pelo painel `/mesas` e fazer o check-in do João (mesa 1). O sistema sugere outra mesa ou a lista de espera.
+5. Fazer o check-in da Carla, abrir a comanda e adicionar itens.
+6. Fechar ou pagar um pedido e atribuir a mesa liberada ao 1º da fila.
+
+Testes: `python -m unittest tests.test_reservas -v`
+
+---
+
 ## 🔨 Variáveis de Ambiente
 
 Configure as seguintes variáveis conforme necessário:
