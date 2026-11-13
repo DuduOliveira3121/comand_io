@@ -8,6 +8,7 @@ from app.extensions import db
 from app.models.pagamento import Pagamento
 from app.models.pedido import Pedido
 from app.models.mesa import Mesa
+from app.reservas.servico import finalizar_reservas_encerradas
 from app.models.movimentacao_pontos import MovimentacaoPontos
 from app.email_service import enviar_email_fidelidade
 
@@ -247,6 +248,10 @@ def confirmar_pagamento(pagamento_id):
                     ))
 
         db.session.commit()
+
+        # Reserva vinculada a este pedido passa a "finalizada"
+        if pedido_fechado:
+            finalizar_reservas_encerradas(pedido.id)
 
         if pontos_creditados:
             Thread(

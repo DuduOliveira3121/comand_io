@@ -6,10 +6,11 @@ from app.extensions import db
 # STATUS POSSÍVEIS DE UMA RESERVA
 # ============================================
 STATUS_CONFIRMADA = "confirmada"
-STATUS_AGUARDANDO = "aguardando"            # reserva registrada, aguardando confirmação do cliente
+STATUS_AGUARDANDO = "aguardando"            # cliente chegou, mas está na lista de espera aguardando mesa
 STATUS_EM_ATENDIMENTO = "em_atendimento"    # cliente fez check-in e está na mesa
 STATUS_CANCELADA = "cancelada"
 STATUS_NAO_COMPARECEU = "nao_compareceu"
+STATUS_FINALIZADA = "finalizada"           # pedido da mesa encerrado/pago
 
 STATUS_RESERVA = [
     STATUS_CONFIRMADA,
@@ -17,6 +18,7 @@ STATUS_RESERVA = [
     STATUS_EM_ATENDIMENTO,
     STATUS_CANCELADA,
     STATUS_NAO_COMPARECEU,
+    STATUS_FINALIZADA,
 ]
 
 STATUS_RESERVA_DESCRICOES = {
@@ -25,6 +27,7 @@ STATUS_RESERVA_DESCRICOES = {
     STATUS_EM_ATENDIMENTO: "Em atendimento",
     STATUS_CANCELADA: "Cancelada",
     STATUS_NAO_COMPARECEU: "Não compareceu",
+    STATUS_FINALIZADA: "Finalizada",
 }
 
 # Reservas nesses status ocupam o horário da mesa (geram conflito)
