@@ -12,6 +12,7 @@ from app.models.mesa import Mesa
 from app.models.pedido import Pedido
 from app.models.reserva import (
     STATUS_EM_ATENDIMENTO,
+    STATUS_FINALIZADA,
     STATUS_QUE_BLOQUEIAM_MESA,
     Reserva,
 )
@@ -215,3 +216,23 @@ def ocupar_mesa(mesa, observacao=None):
     db.session.add(pedido)
     db.session.flush()
     return pedido
+
+
+def finalizar_reservas_encerradas(pedido_id=None):
+    """Reserva em atendimento passa a 'finalizada' quando o pedido da mesa é encerrado/pago.
+
+    Chamada ao fechar o pedido e ao confirmar o pagamento; sem pedido_id,
+    sincroniza todas (cobre pedidos encerrados por qualquer outro caminho).
+    """
+    query = Reserva.query.join(Pedido, Reserva.pedido_id == Pedido.id).filter(
+        Reserva.status == STATUS_EM_ATENDIMENTO,
+        Pedido.status == STATUS_PEDIDO_ENCERRADO,
+    )
+    if pedido_id is not None:
+        query = query.filter(Reserva.pedido_id == pedido_id)
+    reservas = query.all()
+    for reserva in reservas:
+        reserva.status = STATUS_FINALIZADA
+    if reservas:
+        db.session.commit()
+    return len(reservas)

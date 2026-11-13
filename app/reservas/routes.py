@@ -98,6 +98,7 @@ def listar_status():
 # =========================
 @reservas_bp.route("", methods=["GET"])
 def listar_reservas():
+    servico.finalizar_reservas_encerradas()
     query = Reserva.query
 
     if request.args.get("data"):
@@ -125,6 +126,7 @@ def listar_reservas():
 
 @reservas_bp.route("/<int:reserva_id>", methods=["GET"])
 def obter_reserva(reserva_id):
+    servico.finalizar_reservas_encerradas()
     return jsonify(_buscar_reserva(reserva_id).to_dict())
 
 
@@ -133,6 +135,7 @@ def obter_reserva(reserva_id):
 # =========================
 @reservas_bp.route("/agenda", methods=["GET"])
 def agenda_do_dia():
+    servico.finalizar_reservas_encerradas()
     data = servico.converter_data(request.args.get("data") or servico.agora().date().isoformat())
     reservas = Reserva.query.filter(Reserva.data == data).order_by(Reserva.horario).all()
 

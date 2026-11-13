@@ -100,7 +100,7 @@ class CriacaoReservaTest(ReservasBaseTest):
 
     def test_lista_os_status_possiveis(self):
         status = [s["valor"] for s in self.client.get("/reservas/status").get_json()]
-        self.assertEqual(status, ["confirmada", "aguardando", "em_atendimento", "cancelada", "nao_compareceu"])
+        self.assertEqual(status, ["confirmada", "aguardando", "em_atendimento", "cancelada", "nao_compareceu", "finalizada"])
 
     def test_rejeita_dados_invalidos_com_mensagem_clara(self):
         casos = [
@@ -295,6 +295,22 @@ class CheckInTest(ReservasBaseTest):
         self.client.post(f"/pedidos/fechar/{pedido_id}")
 
         self.assertIn(3, [m["numero"] for m in self.client.get("/reservas/mesas-livres-agora?pessoas=3").get_json()])
+        self.assertEqual(self.client.get(f"/reservas/{reserva_id}").get_json()["status"], "finalizada")
+
+    def test_pagamento_integral_finaliza_reserva(self):
+        reserva_id = self.reserva_hoje()
+        pedido_id = self.client.post(f"/reservas/{reserva_id}/check-in").get_json()["pedido_id"]
+        self.client.post(f"/pedidos/{pedido_id}/itens", json={"produto_id": 1, "quantidade": 2})
+
+        pagamento = self.client.post("/pagamentos", json={"pedido_id": pedido_id, "valor": 16, "metodo": "cartao"}).get_json()
+        with patch("app.pagamento.routes.Thread"):
+            confirmado = self.client.post(f"/pagamentos/confirmar/{pagamento['pagamento_id']}").get_json()
+
+        self.assertTrue(confirmado["pedido_fechado"])
+        with self.app.app_context():
+            self.assertEqual(db.session.get(Reserva, reserva_id).status, "finalizada")
+        ativas = self.client.get("/reservas?status=confirmada,aguardando,em_atendimento").get_json()
+        self.assertEqual(ativas, [])
 
 
 class ListaEsperaTest(ReservasBaseTest):

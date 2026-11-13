@@ -6,6 +6,7 @@ from app.models.item_pedido import ItemPedido
 from app.models.produto import Produto
 from app.models.pedido import Pedido
 from app.models.mesa import Mesa
+from app.reservas.servico import finalizar_reservas_encerradas
 from app.pedido.status import STATUS_VALIDOS
 from app.categorias import CATEGORIAS_PEDIDO, normalizar_categoria_pedido
 
@@ -191,6 +192,9 @@ def fechar_pedido(pedido_id):
         mesa.status = "livre"
 
     db.session.commit()
+
+    # Reserva vinculada a este pedido passa a "finalizada"
+    finalizar_reservas_encerradas(pedido.id)
 
     return jsonify({
         "mensagem": "Pedido encerrado",

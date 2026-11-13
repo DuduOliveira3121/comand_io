@@ -344,10 +344,12 @@ Acesse **http://localhost:5000/fidelidade** pelo link no painel administrativo p
 
 ## Reservas de mesas e lista de espera
 
+Documentação completa, diagramas (caso de uso e classes) e roteiro de apresentação: [`docs/reservas-e-lista-de-espera.md`](docs/reservas-e-lista-de-espera.md).
+
 Tela da recepção: **http://localhost:5000/recepcao** (também tem link no `/admin` e no `/mesas`).
 
 **Reserva**: cliente, contato, data, horário, quantidade de pessoas, mesa, observação e status.
-Os status são `confirmada`, `aguardando` (o cliente chegou e está na lista de espera), `em_atendimento`, `cancelada` e `nao_compareceu`.
+Os status são `confirmada`, `aguardando` (o cliente chegou e está na lista de espera), `em_atendimento`, `cancelada`, `nao_compareceu` e `finalizada` (o pedido da mesa foi encerrado ou pago).
 
 Regras:
 - A mesa precisa comportar a quantidade de pessoas.
