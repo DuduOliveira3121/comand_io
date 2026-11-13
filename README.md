@@ -344,6 +344,8 @@ Acesse **http://localhost:5000/fidelidade** pelo link no painel administrativo p
 
 ## Reservas de mesas e lista de espera
 
+Documentação completa, diagramas (caso de uso e classes) e roteiro de apresentação: [`docs/reservas-e-lista-de-espera.md`](docs/reservas-e-lista-de-espera.md).
+
 Tela da recepção: **http://localhost:5000/recepcao** (também tem link no `/admin` e no `/mesas`).
 
 **Reserva**: cliente, contato, data, horário, quantidade de pessoas, mesa, observação e status.

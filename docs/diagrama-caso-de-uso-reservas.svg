@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="800" viewBox="0 0 1160 800" font-family="Arial, Helvetica, sans-serif">
+  <rect width="1160" height="800" fill="#ffffff"/>
+
+  <text x="580" y="28" font-size="19" font-weight="bold" text-anchor="middle" fill="#1a237e">
+    Diagrama de Caso de Uso — Reservas de Mesas e Lista de Espera
+  </text>
+
+  <!-- fronteira do sistema -->
+  <rect x="215" y="48" width="705" height="668" fill="#fafafa" stroke="#555" stroke-width="1.5" rx="6"/>
+  <text x="567" y="70" font-size="13" font-weight="bold" text-anchor="middle" fill="#555">comand.io — Módulo de Reservas</text>
+
+  <!-- ===== ATOR: Recepcionista ===== -->
+  <g stroke="#1a237e" stroke-width="2" fill="none">
+    <circle cx="105" cy="268" r="14" fill="#fff"/>
+    <line x1="105" y1="282" x2="105" y2="322"/>
+    <line x1="82" y1="296" x2="128" y2="296"/>
+    <line x1="105" y1="322" x2="86" y2="352"/>
+    <line x1="105" y1="322" x2="124" y2="352"/>
+  </g>
+  <text x="130" y="392" font-size="13" font-weight="bold" text-anchor="end" fill="#1a237e">Recepcionista</text>
+
+  <!-- ===== ATOR: Cliente ===== -->
+  <g stroke="#2e7d32" stroke-width="2" fill="none">
+    <circle cx="105" cy="578" r="14" fill="#fff"/>
+    <line x1="105" y1="592" x2="105" y2="632"/>
+    <line x1="82" y1="606" x2="128" y2="606"/>
+    <line x1="105" y1="632" x2="86" y2="662"/>
+    <line x1="105" y1="632" x2="124" y2="662"/>
+  </g>
+  <text x="130" y="702" font-size="13" font-weight="bold" text-anchor="end" fill="#2e7d32">Cliente</text>
+
+  <!-- ===== ATOR SECUNDÁRIO: Módulo de Pedidos / Pagamento ===== -->
+  <g stroke="#6a1b9a" stroke-width="2" fill="none">
+    <circle cx="1040" cy="368" r="14" fill="#fff"/>
+    <line x1="1040" y1="382" x2="1040" y2="422"/>
+    <line x1="1017" y1="396" x2="1063" y2="396"/>
+    <line x1="1040" y1="422" x2="1021" y2="452"/>
+    <line x1="1040" y1="422" x2="1059" y2="452"/>
+  </g>
+  <text x="1022" y="482" font-size="12" font-weight="bold" text-anchor="start" fill="#6a1b9a">Módulo de</text>
+  <text x="1022" y="497" font-size="12" font-weight="bold" text-anchor="start" fill="#6a1b9a">Pedidos /</text>
+  <text x="1022" y="512" font-size="12" font-weight="bold" text-anchor="start" fill="#6a1b9a">Pagamento</text>
+
+  <!-- ===== ASSOCIAÇÕES: Recepcionista -> casos de uso ===== -->
+  <g stroke="#1a237e" stroke-width="1.3">
+    <line x1="132" y1="280" x2="254" y2="95"/>
+    <line x1="134" y1="285" x2="254" y2="165"/>
+    <line x1="136" y1="290" x2="254" y2="235"/>
+    <line x1="138" y1="296" x2="254" y2="305"/>
+    <line x1="136" y1="306" x2="254" y2="375"/>
+    <line x1="134" y1="312" x2="254" y2="445"/>
+    <line x1="132" y1="318" x2="254" y2="515"/>
+    <line x1="130" y1="324" x2="254" y2="585"/>
+    <line x1="128" y1="330" x2="254" y2="655"/>
+  </g>
+
+  <!-- ===== ASSOCIAÇÕES: Cliente -> casos de uso ===== -->
+  <g stroke="#2e7d32" stroke-width="1.3" stroke-dasharray="none">
+    <line x1="132" y1="570" x2="254" y2="100"/>
+    <line x1="134" y1="580" x2="254" y2="520"/>
+    <line x1="136" y1="590" x2="254" y2="590"/>
+  </g>
+
+  <!-- ===== ASSOCIAÇÕES: Módulo de Pedidos -> casos de uso ===== -->
+  <g stroke="#6a1b9a" stroke-width="1.3">
+    <line x1="1013" y1="380" x2="902" y2="330"/>
+    <line x1="1013" y1="400" x2="902" y2="600"/>
+  </g>
+
+  <!-- ===== CASOS DE USO (coluna principal) ===== -->
+  <g fill="#e3f2fd" stroke="#1565c0" stroke-width="1.6">
+    <ellipse cx="402" cy="95"  rx="148" ry="27"/>
+    <ellipse cx="402" cy="165" rx="148" ry="27"/>
+    <ellipse cx="402" cy="235" rx="148" ry="27"/>
+    <ellipse cx="402" cy="305" rx="148" ry="27"/>
+    <ellipse cx="402" cy="375" rx="148" ry="27"/>
+    <ellipse cx="402" cy="445" rx="148" ry="27"/>
+    <ellipse cx="402" cy="515" rx="148" ry="27"/>
+    <ellipse cx="402" cy="585" rx="148" ry="27"/>
+    <ellipse cx="402" cy="655" rx="148" ry="27"/>
+  </g>
+  <g font-size="13" text-anchor="middle" fill="#0d47a1">
+    <text x="402" y="100">Cadastrar reserva</text>
+
+    <text x="402" y="161">Consultar reservas</text>
+    <text x="402" y="176" font-size="11">(data, mesa e situação)</text>
+
+    <text x="402" y="240">Editar reserva</text>
+
+    <text x="402" y="310">Cancelar reserva</text>
+
+    <text x="402" y="380">Marcar não comparecimento</text>
+
+    <text x="402" y="450">Visualizar agenda diária</text>
+
+    <text x="402" y="520">Realizar check-in do cliente</text>
+
+    <text x="402" y="581">Registrar cliente na</text>
+    <text x="402" y="596">lista de espera</text>
+
+    <text x="402" y="651">Atribuir mesa liberada</text>
+    <text x="402" y="666" font-size="11">a cliente da fila</text>
+  </g>
+
+  <!-- ===== CASOS DE USO INCLUÍDOS ===== -->
+  <g fill="#fff8e1" stroke="#ef6c00" stroke-width="1.6">
+    <ellipse cx="772" cy="120" rx="130" ry="27"/>
+    <ellipse cx="772" cy="200" rx="130" ry="27"/>
+    <ellipse cx="772" cy="280" rx="130" ry="27"/>
+    <ellipse cx="772" cy="440" rx="130" ry="27"/>
+    <ellipse cx="772" cy="600" rx="130" ry="27"/>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#e65100">
+    <text x="772" y="116">Validar capacidade</text>
+    <text x="772" y="131">da mesa</text>
+
+    <text x="772" y="196">Validar conflito de</text>
+    <text x="772" y="211">horário da mesa</text>
+
+    <text x="772" y="276">Exibir mesas</text>
+    <text x="772" y="291">disponíveis</text>
+
+    <text x="772" y="436">Abrir pedido e</text>
+    <text x="772" y="451">ocupar a mesa</text>
+
+    <text x="772" y="596">Liberar mesa e</text>
+    <text x="772" y="611">finalizar reserva</text>
+  </g>
+
+  <!-- seta include -->
+  <defs>
+    <marker id="seta" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8" fill="none" stroke="#ef6c00" stroke-width="1.4"/>
+    </marker>
+    <marker id="setaExt" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8" fill="none" stroke="#6a1b9a" stroke-width="1.4"/>
+    </marker>
+  </defs>
+
+  <!-- includes: Cadastrar reserva -> validações e mesas disponíveis -->
+  <g stroke="#ef6c00" stroke-width="1.2" stroke-dasharray="7,4" marker-end="url(#seta)" fill="none">
+    <line x1="548" y1="100" x2="645" y2="117"/>
+    <line x1="550" y1="108" x2="648" y2="193"/>
+    <line x1="548" y1="112" x2="650" y2="272"/>
+    <!-- Editar reserva -> validações -->
+    <line x1="550" y1="228" x2="648" y2="207"/>
+    <line x1="550" y1="240" x2="650" y2="282"/>
+    <!-- Check-in -> abrir pedido -->
+    <line x1="548" y1="508" x2="650" y2="452"/>
+    <!-- Atribuir mesa -> abrir pedido -->
+    <line x1="548" y1="645" x2="652" y2="458"/>
+  </g>
+  <g font-size="10" fill="#ef6c00" font-style="italic">
+    <text x="596" y="100">&#171;include&#187;</text>
+    <text x="566" y="166">&#171;include&#187;</text>
+    <text x="560" y="206">&#171;include&#187;</text>
+    <text x="596" y="286">&#171;include&#187;</text>
+    <text x="596" y="486">&#171;include&#187;</text>
+    <text x="636" y="514">&#171;include&#187;</text>
+  </g>
+
+  <!-- extend: lista de espera estende o check-in -->
+  <g stroke="#6a1b9a" stroke-width="1.2" stroke-dasharray="7,4" marker-end="url(#setaExt)" fill="none">
+    <polyline points="534,600 574,592 574,528 540,518"/>
+  </g>
+  <text x="580" y="552" font-size="10" fill="#6a1b9a" font-style="italic">&#171;extend&#187;</text>
+  <text x="580" y="565" font-size="9" fill="#6a1b9a">[sem mesa</text>
+  <text x="580" y="576" font-size="9" fill="#6a1b9a">disponível]</text>
+
+  <!-- legenda -->
+  <rect x="215" y="730" width="705" height="56" fill="#ffffff" stroke="#ccc" rx="4"/>
+  <text x="228" y="750" font-size="11" font-weight="bold" fill="#555">Legenda:</text>
+  <ellipse cx="300" cy="746" rx="22" ry="9" fill="#e3f2fd" stroke="#1565c0"/>
+  <text x="330" y="750" font-size="11" fill="#555">caso de uso principal</text>
+  <ellipse cx="490" cy="746" rx="22" ry="9" fill="#fff8e1" stroke="#ef6c00"/>
+  <text x="520" y="750" font-size="11" fill="#555">caso de uso incluído (regra de negócio)</text>
+  <line x1="228" y1="772" x2="268" y2="772" stroke="#ef6c00" stroke-width="1.2" stroke-dasharray="7,4"/>
+  <text x="276" y="776" font-size="11" fill="#555">&#171;include&#187;: sempre executado</text>
+  <line x1="490" y1="772" x2="530" y2="772" stroke="#6a1b9a" stroke-width="1.2" stroke-dasharray="7,4"/>
+  <text x="538" y="776" font-size="11" fill="#555">&#171;extend&#187;: executado apenas na condição indicada</text>
+</svg>
